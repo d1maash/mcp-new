@@ -6,7 +6,7 @@ export async function promptAddResources(): Promise<boolean> {
     {
       type: 'confirm',
       name: 'addResources',
-      message: 'Хотите добавить resources?',
+      message: 'Do you want to add resources?',
       default: false,
     },
   ]);
@@ -24,25 +24,25 @@ export async function promptResourceConfig(): Promise<ResourceConfig> {
     {
       type: 'input',
       name: 'name',
-      message: 'Название resource:',
+      message: 'Resource name:',
       validate: (input: string) => (input.trim().length > 0 ? true : 'Name is required'),
     },
     {
       type: 'input',
       name: 'uri',
-      message: 'URI resource:',
+      message: 'Resource URI:',
       validate: (input: string) => (input.trim().length > 0 ? true : 'URI is required'),
     },
     {
       type: 'input',
       name: 'description',
-      message: 'Описание resource:',
+      message: 'Resource description:',
       default: '',
     },
     {
       type: 'input',
       name: 'mimeType',
-      message: 'MIME type (необязательно):',
+      message: 'MIME type (optional):',
       default: '',
     },
   ]);
@@ -67,7 +67,7 @@ export async function promptMultipleResources(): Promise<ResourceConfig[]> {
       {
         type: 'confirm',
         name: 'shouldAddMore',
-        message: 'Добавить ещё один resource?',
+        message: 'Add another resource?',
         default: false,
       },
     ]);

@@ -7,7 +7,7 @@ export async function promptIncludeExampleTool(): Promise<boolean> {
     {
       type: 'confirm',
       name: 'includeExample',
-      message: 'Добавить пример tool?',
+      message: 'Add example tool?',
       default: true,
     },
   ]);
@@ -20,7 +20,7 @@ export async function promptAddTools(): Promise<boolean> {
     {
       type: 'confirm',
       name: 'addTools',
-      message: 'Хотите добавить собственные tools?',
+      message: 'Do you want to add custom tools?',
       default: false,
     },
   ]);
@@ -33,7 +33,7 @@ export async function promptToolConfig(): Promise<ToolConfig> {
     {
       type: 'input',
       name: 'name',
-      message: 'Название tool (snake_case):',
+      message: 'Tool name (snake_case):',
       validate: (input: string) => {
         const result = validateToolName(input);
         return result.valid ? true : result.error || 'Invalid tool name';
@@ -42,7 +42,7 @@ export async function promptToolConfig(): Promise<ToolConfig> {
     {
       type: 'input',
       name: 'description',
-      message: 'Описание tool:',
+      message: 'Tool description:',
       validate: (input: string) => (input.trim().length > 0 ? true : 'Description is required'),
     },
   ]);
@@ -61,7 +61,7 @@ async function promptToolParameters(): Promise<ToolParameter[]> {
       {
         type: 'confirm',
         name: 'shouldAdd',
-        message: parameters.length === 0 ? 'Добавить параметр?' : 'Добавить ещё параметр?',
+        message: parameters.length === 0 ? 'Add parameter?' : 'Add another parameter?',
         default: parameters.length === 0,
       },
     ]);
@@ -88,13 +88,13 @@ async function promptSingleParameter(): Promise<ToolParameter> {
     {
       type: 'input',
       name: 'name',
-      message: 'Название параметра:',
+      message: 'Parameter name:',
       validate: (input: string) => (input.trim().length > 0 ? true : 'Parameter name is required'),
     },
     {
       type: 'list',
       name: 'type',
-      message: 'Тип параметра:',
+      message: 'Parameter type:',
       choices: [
         { name: 'string', value: 'string' },
         { name: 'number', value: 'number' },
@@ -106,13 +106,13 @@ async function promptSingleParameter(): Promise<ToolParameter> {
     {
       type: 'input',
       name: 'description',
-      message: 'Описание параметра:',
+      message: 'Parameter description:',
       default: '',
     },
     {
       type: 'confirm',
       name: 'required',
-      message: 'Обязательный параметр?',
+      message: 'Required parameter?',
       default: true,
     },
   ]);
@@ -132,7 +132,7 @@ export async function promptMultipleTools(): Promise<ToolConfig[]> {
       {
         type: 'confirm',
         name: 'shouldAddMore',
-        message: 'Добавить ещё один tool?',
+        message: 'Add another tool?',
         default: false,
       },
     ]);

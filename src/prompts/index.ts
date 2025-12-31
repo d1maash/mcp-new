@@ -15,6 +15,7 @@ export interface WizardOptions {
   defaultName?: string;
   skipDescription?: boolean;
   skipAdvanced?: boolean;
+  presetLanguage?: 'typescript' | 'python';
 }
 
 export async function runWizard(options: WizardOptions = {}): Promise<ProjectConfig> {
@@ -25,7 +26,8 @@ export async function runWizard(options: WizardOptions = {}): Promise<ProjectCon
     description = await promptProjectDescription();
   }
 
-  const language = await promptLanguage();
+  // Skip language prompt if preset via CLI flag
+  const language = options.presetLanguage || await promptLanguage();
   const transport = await promptTransport();
   const includeExampleTool = await promptIncludeExampleTool();
 
@@ -57,9 +59,10 @@ export async function runWizard(options: WizardOptions = {}): Promise<ProjectCon
   };
 }
 
-export async function runQuickWizard(defaultName?: string): Promise<ProjectConfig> {
+export async function runQuickWizard(defaultName?: string, presetLanguage?: 'typescript' | 'python'): Promise<ProjectConfig> {
   const name = await promptProjectName(defaultName);
-  const language = await promptLanguage();
+  // Skip language prompt if preset via CLI flag
+  const language = presetLanguage || await promptLanguage();
   const transport = await promptTransport();
   const includeExampleTool = await promptIncludeExampleTool();
 

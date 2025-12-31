@@ -6,9 +6,9 @@ export async function promptTransport(): Promise<Transport> {
     {
       type: 'list',
       name: 'transport',
-      message: 'Выберите транспорт:',
+      message: 'Select transport:',
       choices: [
-        { name: 'stdio (стандартный ввод/вывод)', value: 'stdio' },
+        { name: 'stdio (standard input/output)', value: 'stdio' },
         { name: 'SSE (Server-Sent Events)', value: 'sse' },
       ],
       default: 'stdio',

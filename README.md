@@ -1,120 +1,120 @@
 # create-mcp-server
 
-> CLI-генератор MCP-серверов за минуту. Как `create-react-app`, но для MCP.
+> CLI generator for MCP servers in seconds. Like `create-react-app`, but for MCP.
 
-## Быстрый старт
+## Quick Start
 
 ```bash
 npx create-mcp-server my-server
 ```
 
-## Возможности
+## Features
 
-- **Интерактивный wizard** — создание MCP-сервера через пошаговые промпты
-- **TypeScript и Python** — поддержка обоих языков
-- **Генерация из OpenAPI** — автоматическое создание tools из OpenAPI/Swagger спецификации
-- **AI-генерация** — создание tools из текстового описания с помощью Claude
-- **Готовые шаблоны** — сразу работающий код с примерами
+- **Interactive wizard** — create MCP server through step-by-step prompts
+- **TypeScript and Python** — support for both languages
+- **OpenAPI generation** — auto-create tools from OpenAPI/Swagger specification
+- **AI generation** — create tools from text description using Claude
+- **Ready-to-use templates** — working code with examples out of the box
 
-## Установка
+## Installation
 
 ```bash
 npm install -g create-mcp-server
 ```
 
-Или используйте напрямую через npx:
+Or use directly via npx:
 
 ```bash
 npx create-mcp-server my-server
 ```
 
-## Использование
+## Usage
 
-### Базовое создание
+### Basic creation
 
 ```bash
 npx create-mcp-server my-weather-api
 
-# Ответьте на вопросы:
-# ? Выберите язык: TypeScript
-# ? Выберите транспорт: stdio
-# ? Добавить пример tool? Yes
+# Answer the questions:
+# ? Select language: TypeScript
+# ? Select transport: stdio
+# ? Add example tool? Yes
 
-# Готово!
+# Done!
 cd my-weather-api
 npm install
 npm run dev
 ```
 
-### С флагами
+### With flags
 
 ```bash
-# TypeScript проект
+# TypeScript project
 npx create-mcp-server my-server --typescript
 
-# Python проект
+# Python project
 npx create-mcp-server my-server --python
 
-# Пропустить установку зависимостей
+# Skip dependency installation
 npx create-mcp-server my-server --skip-install
 
-# Использовать значения по умолчанию
+# Use default values
 npx create-mcp-server my-server -y
 ```
 
-### Из OpenAPI спецификации
+### From OpenAPI specification
 
 ```bash
 npx create-mcp-server stripe-mcp --from-openapi ./stripe-api.yaml
 
-# CLI покажет найденные endpoints и позволит выбрать нужные
+# CLI will show found endpoints and let you select the ones you need
 ```
 
-### Из текстового описания (AI)
+### From text description (AI)
 
 ```bash
 npx create-mcp-server notion-mcp --from-prompt
 
-# Опишите ваш API в редакторе
-# Claude сгенерирует tools автоматически
+# Describe your API in the editor
+# Claude will generate tools automatically
 ```
 
-Требуется переменная окружения `ANTHROPIC_API_KEY`.
+Requires `ANTHROPIC_API_KEY` environment variable.
 
-### Инициализация в существующем проекте
+### Initialize in existing project
 
 ```bash
 cd my-existing-project
 npx create-mcp-server init
 ```
 
-### Добавление нового tool
+### Add new tool
 
 ```bash
 cd my-mcp-server
 npx create-mcp-server add-tool
 ```
 
-## Команды CLI
+## CLI Commands
 
-| Команда | Описание |
-|---------|----------|
-| `create-mcp-server <name>` | Создать новый MCP-сервер |
-| `create-mcp-server init` | Инициализировать MCP в текущей папке |
-| `create-mcp-server add-tool` | Добавить tool в существующий сервер |
+| Command | Description |
+|---------|-------------|
+| `create-mcp-server <name>` | Create new MCP server |
+| `create-mcp-server init` | Initialize MCP in current directory |
+| `create-mcp-server add-tool` | Add tool to existing server |
 
-## Опции
+## Options
 
-| Флаг | Описание |
-|------|----------|
-| `-t, --typescript` | Использовать TypeScript |
-| `-p, --python` | Использовать Python |
-| `--skip-install` | Пропустить установку зависимостей |
-| `--from-openapi <path>` | Создать из OpenAPI спецификации |
-| `--from-prompt` | Создать через AI из описания |
-| `-y, --yes` | Использовать значения по умолчанию |
+| Flag | Description |
+|------|-------------|
+| `-t, --typescript` | Use TypeScript |
+| `-p, --python` | Use Python |
+| `--skip-install` | Skip dependency installation |
+| `--from-openapi <path>` | Create from OpenAPI specification |
+| `--from-prompt` | Create via AI from description |
+| `-y, --yes` | Use default values |
 
-## Структура сгенерированного проекта
+## Generated Project Structure
 
 ### TypeScript
 
@@ -126,7 +126,7 @@ my-server/
 ├── .gitignore
 ├── .env.example
 └── src/
-    ├── index.ts          # Главный файл сервера
+    ├── index.ts          # Main server file
     └── tools/
         └── example-tool.ts
 ```
@@ -142,42 +142,42 @@ my-server/
 ├── .env.example
 └── src/
     ├── __init__.py
-    ├── server.py         # Главный файл сервера
+    ├── server.py         # Main server file
     └── tools/
         ├── __init__.py
         └── example_tool.py
 ```
 
-## Разработка
+## Development
 
 ```bash
-# Клонировать репозиторий
+# Clone repository
 git clone https://github.com/your-username/create-mcp-server
 cd create-mcp-server
 
-# Установить зависимости
+# Install dependencies
 npm install
 
-# Разработка
+# Development
 npm run dev
 
-# Сборка
+# Build
 npm run build
 
-# Тесты
+# Tests
 npm test
 
-# Локальное тестирование CLI
+# Local CLI testing
 npm link
 create-mcp-server test-project
 ```
 
-## Ссылки
+## Links
 
 - [MCP Specification](https://spec.modelcontextprotocol.io/)
 - [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk)
 - [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk)
 
-## Лицензия
+## License
 
 MIT

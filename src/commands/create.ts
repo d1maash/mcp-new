@@ -42,19 +42,15 @@ async function handleWizardGeneration(
 ): Promise<void> {
   let config: ProjectConfig;
 
+  // Determine preset language from CLI flags
+  const presetLanguage = options.typescript ? 'typescript' : options.python ? 'python' : undefined;
+
   if (options.yes) {
     // Quick mode - use defaults with minimal prompts
-    config = await runQuickWizard(projectName);
+    config = await runQuickWizard(projectName, presetLanguage);
   } else {
     // Full wizard mode
-    config = await runWizard({ defaultName: projectName });
-  }
-
-  // Apply CLI flags
-  if (options.typescript) {
-    config.language = 'typescript';
-  } else if (options.python) {
-    config.language = 'python';
+    config = await runWizard({ defaultName: projectName, presetLanguage });
   }
 
   if (options.skipInstall) {

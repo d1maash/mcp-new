@@ -52,7 +52,7 @@ export const logger = {
 
   nextSteps: (projectName: string, language: string) => {
     logger.blank();
-    logger.box('Следующие шаги:', [
+    logger.box('Next steps:', [
       '',
       `  ${chalk.cyan('cd')} ${projectName}`,
       language === 'typescript' ? `  ${chalk.cyan('npm install')}` : `  ${chalk.cyan('pip install -e .')}`,
