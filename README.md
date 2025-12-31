@@ -153,7 +153,7 @@ my-server/
 
 ```bash
 # Clone repository
-git clone https://github.com/YOUR_USERNAME/mcp-generator.git
+git clone https://github.com/d1maash/mcp-generator.git
 cd mcp-generator
 
 # Install dependencies
