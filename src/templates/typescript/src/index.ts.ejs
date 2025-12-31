@@ -56,7 +56,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           }<%= index < tool.parameters.length - 1 ? ',' : '' %>
 <% }); %>
         },
-        required: [<%= tool.parameters.filter(p => p.required).map(p => '"' + p.name + '"').join(', ') %>],
+        required: [<%- tool.parameters.filter(p => p.required).map(p => '"' + p.name + '"').join(', ') %>],
       },
     },
 <% }); %>

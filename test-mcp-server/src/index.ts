@@ -1,11 +1,9 @@
 #!/usr/bin/env node
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-<% if (transport === 'stdio') { %>
+
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-<% } else { %>
-import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
-<% } %>
+
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
@@ -13,7 +11,7 @@ import {
 
 const server = new Server(
   {
-    name: "<%= name %>",
+    name: "test-mcp-server",
     version: "1.0.0",
   },
   {
@@ -26,7 +24,7 @@ const server = new Server(
 // Define available tools
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: [
-<% if (includeExampleTool) { %>
+
     {
       name: "example_tool",
       description: "An example tool that echoes the input",
@@ -41,25 +39,52 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         required: ["query"],
       },
     },
-<% } %>
-<% tools.forEach(function(tool) { %>
+
+
     {
-      name: "<%= tool.name %>",
-      description: "<%= tool.description %>",
+      name: "get_weather",
+      description: "Get current weather for a city",
       inputSchema: {
         type: "object",
         properties: {
-<% tool.parameters.forEach(function(param, index) { %>
-          <%= param.name %>: {
-            type: "<%= param.type %>",
-            description: "<%= param.description %>",
-          }<%= index < tool.parameters.length - 1 ? ',' : '' %>
-<% }); %>
+
+          city: {
+            type: "string",
+            description: "City name",
+          },
+
+          units: {
+            type: "string",
+            description: "Units (celsius/fahrenheit)",
+          }
+
         },
-        required: [<%- tool.parameters.filter(p => p.required).map(p => '"' + p.name + '"').join(', ') %>],
+        required: ["city"],
       },
     },
-<% }); %>
+
+    {
+      name: "search_news",
+      description: "Search for news articles",
+      inputSchema: {
+        type: "object",
+        properties: {
+
+          query: {
+            type: "string",
+            description: "Search query",
+          },
+
+          limit: {
+            type: "number",
+            description: "Max results",
+          }
+
+        },
+        required: ["query"],
+      },
+    },
+
   ],
 }));
 
@@ -67,7 +92,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
 
-<% if (includeExampleTool) { %>
+
   if (name === "example_tool") {
     const query = args?.query as string;
     return {
@@ -79,40 +104,56 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       ],
     };
   }
-<% } %>
 
-<% tools.forEach(function(tool) { %>
-  if (name === "<%= tool.name %>") {
-    // TODO: Implement <%= tool.name %> logic
-<% tool.parameters.forEach(function(param) { %>
-    const <%= param.name %> = args?.<%= param.name %> as <%= param.type === 'number' ? 'number' : param.type === 'boolean' ? 'boolean' : 'string' %>;
-<% }); %>
+
+
+  if (name === "get_weather") {
+    // TODO: Implement get_weather logic
+
+    const city = args?.city as string;
+
+    const units = args?.units as string;
+
 
     return {
       content: [
         {
           type: "text",
-          text: `<%= tool.name %> called with: ${JSON.stringify(args)}`,
+          text: `get_weather called with: ${JSON.stringify(args)}`,
         },
       ],
     };
   }
-<% }); %>
+
+  if (name === "search_news") {
+    // TODO: Implement search_news logic
+
+    const query = args?.query as string;
+
+    const limit = args?.limit as number;
+
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: `search_news called with: ${JSON.stringify(args)}`,
+        },
+      ],
+    };
+  }
+
 
   throw new Error(`Unknown tool: ${name}`);
 });
 
 // Start the server
 async function main() {
-<% if (transport === 'stdio') { %>
+
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("<%= name %> MCP server running on stdio");
-<% } else { %>
-  const transport = new SSEServerTransport("/messages", response);
-  await server.connect(transport);
-  console.error("<%= name %> MCP server running on SSE");
-<% } %>
+  console.error("test-mcp-server MCP server running on stdio");
+
 }
 
 main().catch((error) => {

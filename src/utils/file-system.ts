@@ -82,7 +82,16 @@ export async function walkDir(
 }
 
 export function getTemplateDir(): string {
-  return path.join(import.meta.dirname, '..', 'templates');
+  // In development: src/templates
+  // In production (dist): ../templates (relative to dist/)
+  const devPath = path.join(import.meta.dirname, '..', 'templates');
+  const prodPath = path.join(import.meta.dirname, '..', '..', 'templates');
+
+  // Check which path exists
+  if (fs.existsSync(devPath)) {
+    return devPath;
+  }
+  return prodPath;
 }
 
 export function resolveOutputPath(basePath: string, ...segments: string[]): string {

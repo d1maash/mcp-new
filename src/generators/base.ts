@@ -8,6 +8,7 @@ import {
   exists,
   walkDir,
   getTemplateDir,
+  readDir,
 } from '../utils/file-system.js';
 import { initGitRepository, createInitialCommit, isGitInstalled } from '../utils/git.js';
 import { logger } from '../utils/logger.js';
@@ -143,7 +144,7 @@ export abstract class BaseGenerator {
 
   protected async checkOutputDir(): Promise<boolean> {
     if (await exists(this.outputDir)) {
-      const files = await import('fs-extra').then((m) => m.readdir(this.outputDir));
+      const files = await readDir(this.outputDir);
       if (files.length > 0) {
         return false;
       }

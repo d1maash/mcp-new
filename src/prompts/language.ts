@@ -6,7 +6,7 @@ export async function promptLanguage(): Promise<Language> {
     {
       type: 'list',
       name: 'language',
-      message: 'Выберите язык:',
+      message: 'Select language:',
       choices: [
         { name: 'TypeScript', value: 'typescript' },
         { name: 'Python', value: 'python' },

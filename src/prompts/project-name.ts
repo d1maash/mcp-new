@@ -6,7 +6,7 @@ export async function promptProjectName(defaultName?: string): Promise<string> {
     {
       type: 'input',
       name: 'projectName',
-      message: 'Название проекта:',
+      message: 'Project name:',
       default: defaultName || 'my-mcp-server',
       validate: (input: string) => {
         const result = validateProjectName(input);
@@ -23,7 +23,7 @@ export async function promptProjectDescription(): Promise<string> {
     {
       type: 'input',
       name: 'description',
-      message: 'Описание проекта (необязательно):',
+      message: 'Project description (optional):',
       default: '',
     },
   ]);
