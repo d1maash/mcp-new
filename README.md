@@ -1,11 +1,11 @@
-# create-mcp-server
+# mcp-generator
 
 > CLI generator for MCP servers in seconds. Like `create-react-app`, but for MCP.
 
 ## Quick Start
 
 ```bash
-npx create-mcp-server my-server
+npx mcp-generator my-server
 ```
 
 ## Features
@@ -19,13 +19,13 @@ npx create-mcp-server my-server
 ## Installation
 
 ```bash
-npm install -g create-mcp-server
+npm install -g mcp-generator
 ```
 
 Or use directly via npx:
 
 ```bash
-npx create-mcp-server my-server
+npx mcp-generator my-server
 ```
 
 ## Usage
@@ -33,9 +33,10 @@ npx create-mcp-server my-server
 ### Basic creation
 
 ```bash
-npx create-mcp-server my-weather-api
+npx mcp-generator my-weather-api
 
 # Answer the questions:
+# ? Project name: my-weather-api
 # ? Select language: TypeScript
 # ? Select transport: stdio
 # ? Add example tool? Yes
@@ -49,23 +50,23 @@ npm run dev
 ### With flags
 
 ```bash
-# TypeScript project
-npx create-mcp-server my-server --typescript
+# TypeScript project (skips language prompt)
+npx mcp-generator my-server -t
 
-# Python project
-npx create-mcp-server my-server --python
+# Python project (skips language prompt)
+npx mcp-generator my-server -p
 
 # Skip dependency installation
-npx create-mcp-server my-server --skip-install
+npx mcp-generator my-server --skip-install
 
 # Use default values
-npx create-mcp-server my-server -y
+npx mcp-generator my-server -y
 ```
 
 ### From OpenAPI specification
 
 ```bash
-npx create-mcp-server stripe-mcp --from-openapi ./stripe-api.yaml
+npx mcp-generator stripe-mcp --from-openapi ./stripe-api.yaml
 
 # CLI will show found endpoints and let you select the ones you need
 ```
@@ -73,7 +74,7 @@ npx create-mcp-server stripe-mcp --from-openapi ./stripe-api.yaml
 ### From text description (AI)
 
 ```bash
-npx create-mcp-server notion-mcp --from-prompt
+npx mcp-generator notion-mcp --from-prompt
 
 # Describe your API in the editor
 # Claude will generate tools automatically
@@ -85,30 +86,30 @@ Requires `ANTHROPIC_API_KEY` environment variable.
 
 ```bash
 cd my-existing-project
-npx create-mcp-server init
+npx mcp-generator init
 ```
 
 ### Add new tool
 
 ```bash
 cd my-mcp-server
-npx create-mcp-server add-tool
+npx mcp-generator add-tool
 ```
 
 ## CLI Commands
 
 | Command | Description |
 |---------|-------------|
-| `create-mcp-server <name>` | Create new MCP server |
-| `create-mcp-server init` | Initialize MCP in current directory |
-| `create-mcp-server add-tool` | Add tool to existing server |
+| `mcp-generator <name>` | Create new MCP server |
+| `mcp-generator init` | Initialize MCP in current directory |
+| `mcp-generator add-tool` | Add tool to existing server |
 
 ## Options
 
 | Flag | Description |
 |------|-------------|
-| `-t, --typescript` | Use TypeScript |
-| `-p, --python` | Use Python |
+| `-t, --typescript` | Use TypeScript (skips language prompt) |
+| `-p, --python` | Use Python (skips language prompt) |
 | `--skip-install` | Skip dependency installation |
 | `--from-openapi <path>` | Create from OpenAPI specification |
 | `--from-prompt` | Create via AI from description |
@@ -152,8 +153,8 @@ my-server/
 
 ```bash
 # Clone repository
-git clone https://github.com/your-username/create-mcp-server
-cd create-mcp-server
+git clone https://github.com/YOUR_USERNAME/mcp-generator.git
+cd mcp-generator
 
 # Install dependencies
 npm install
@@ -169,7 +170,7 @@ npm test
 
 # Local CLI testing
 npm link
-create-mcp-server test-project
+mcp-generator test-project
 ```
 
 ## Links

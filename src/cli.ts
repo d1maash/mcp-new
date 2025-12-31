@@ -11,13 +11,13 @@ const program = new Command();
 // ASCII art logo
 const logo = `
   ${chalk.cyan('╔═══════════════════════════════════════╗')}
-  ${chalk.cyan('║')}   ${chalk.bold.white('create-mcp-server')}                  ${chalk.cyan('║')}
+  ${chalk.cyan('║')}   ${chalk.bold.white('mcp-generator')}                      ${chalk.cyan('║')}
   ${chalk.cyan('║')}   ${chalk.gray('Generate MCP servers in seconds')}    ${chalk.cyan('║')}
   ${chalk.cyan('╚═══════════════════════════════════════╝')}
 `;
 
 program
-  .name('create-mcp-server')
+  .name('mcp-generator')
   .description('CLI tool for generating MCP (Model Context Protocol) servers')
   .version('0.1.0')
   .addHelpText('beforeAll', logo);
