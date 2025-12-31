@@ -1,0 +1,19 @@
+import inquirer from 'inquirer';
+import type { Language } from '../types/config.js';
+
+export async function promptLanguage(): Promise<Language> {
+  const { language } = await inquirer.prompt<{ language: Language }>([
+    {
+      type: 'list',
+      name: 'language',
+      message: 'Выберите язык:',
+      choices: [
+        { name: 'TypeScript', value: 'typescript' },
+        { name: 'Python', value: 'python' },
+      ],
+      default: 'typescript',
+    },
+  ]);
+
+  return language;
+}

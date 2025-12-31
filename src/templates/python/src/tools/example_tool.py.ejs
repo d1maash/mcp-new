@@ -1,0 +1,47 @@
+"""
+Example tool implementation
+This file demonstrates how to structure a tool handler
+"""
+
+from dataclasses import dataclass
+from mcp.types import Tool
+
+
+@dataclass
+class ExampleToolInput:
+    query: str
+
+
+@dataclass
+class ExampleToolOutput:
+    result: str
+
+
+async def example_tool(input_data: ExampleToolInput) -> ExampleToolOutput:
+    """
+    Example tool that processes a query.
+
+    Args:
+        input_data: The input containing the query
+
+    Returns:
+        The processed result
+    """
+    result = f"Processed: {input_data.query}"
+    return ExampleToolOutput(result=result)
+
+
+EXAMPLE_TOOL_SCHEMA = Tool(
+    name="example_tool",
+    description="An example tool that demonstrates the basic structure",
+    inputSchema={
+        "type": "object",
+        "properties": {
+            "query": {
+                "type": "string",
+                "description": "The query to process",
+            },
+        },
+        "required": ["query"],
+    },
+)

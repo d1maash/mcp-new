@@ -1,0 +1,387 @@
+openapi: 3.0.3
+info:
+  title: Stripe-like API
+  description: A sample payment processing API (inspired by Stripe) for testing complex OpenAPI specs
+  version: 1.0.0
+
+servers:
+  - url: https://api.payments.example.com/v1
+
+paths:
+  /customers:
+    get:
+      operationId: listCustomers
+      summary: List all customers
+      description: Returns a list of customers
+      tags:
+        - customers
+      parameters:
+        - name: limit
+          in: query
+          description: A limit on the number of objects to be returned
+          schema:
+            type: integer
+            default: 10
+        - name: starting_after
+          in: query
+          description: A cursor for pagination
+          schema:
+            type: string
+        - name: email
+          in: query
+          description: Filter by email
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerList'
+
+    post:
+      operationId: createCustomer
+      summary: Create a customer
+      description: Creates a new customer object
+      tags:
+        - customers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCustomer'
+      responses:
+        '201':
+          description: Customer created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+
+  /customers/{id}:
+    get:
+      operationId: retrieveCustomer
+      summary: Retrieve a customer
+      tags:
+        - customers
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+
+    post:
+      operationId: updateCustomer
+      summary: Update a customer
+      tags:
+        - customers
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCustomer'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+
+    delete:
+      operationId: deleteCustomer
+      summary: Delete a customer
+      tags:
+        - customers
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Customer deleted
+
+  /charges:
+    get:
+      operationId: listCharges
+      summary: List all charges
+      tags:
+        - charges
+      parameters:
+        - name: customer
+          in: query
+          description: Only return charges for the customer
+          schema:
+            type: string
+        - name: created
+          in: query
+          description: Filter by created date
+          schema:
+            type: object
+            properties:
+              gte:
+                type: integer
+              lte:
+                type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargeList'
+
+    post:
+      operationId: createCharge
+      summary: Create a charge
+      description: Creates a new charge
+      tags:
+        - charges
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCharge'
+      responses:
+        '201':
+          description: Charge created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Charge'
+
+  /charges/{id}:
+    get:
+      operationId: retrieveCharge
+      summary: Retrieve a charge
+      tags:
+        - charges
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Charge'
+
+  /charges/{id}/refund:
+    post:
+      operationId: refundCharge
+      summary: Refund a charge
+      tags:
+        - charges
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: integer
+                  description: Amount to refund in cents
+                reason:
+                  type: string
+                  enum:
+                    - duplicate
+                    - fraudulent
+                    - requested_by_customer
+      responses:
+        '200':
+          description: Refund created
+
+  /subscriptions:
+    get:
+      operationId: listSubscriptions
+      summary: List all subscriptions
+      tags:
+        - subscriptions
+      parameters:
+        - name: customer
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - active
+              - canceled
+              - past_due
+              - trialing
+      responses:
+        '200':
+          description: Successful response
+
+    post:
+      operationId: createSubscription
+      summary: Create a subscription
+      tags:
+        - subscriptions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSubscription'
+      responses:
+        '201':
+          description: Subscription created
+
+  /subscriptions/{id}:
+    delete:
+      operationId: cancelSubscription
+      summary: Cancel a subscription
+      tags:
+        - subscriptions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: cancel_at_period_end
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Subscription canceled
+
+components:
+  schemas:
+    Customer:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        created:
+          type: integer
+        metadata:
+          type: object
+
+    CustomerList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Customer'
+        has_more:
+          type: boolean
+
+    CreateCustomer:
+      type: object
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        metadata:
+          type: object
+
+    UpdateCustomer:
+      type: object
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+
+    Charge:
+      type: object
+      properties:
+        id:
+          type: string
+        amount:
+          type: integer
+        currency:
+          type: string
+        customer:
+          type: string
+        status:
+          type: string
+        created:
+          type: integer
+
+    ChargeList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Charge'
+        has_more:
+          type: boolean
+
+    CreateCharge:
+      type: object
+      required:
+        - amount
+        - currency
+      properties:
+        amount:
+          type: integer
+          description: Amount in cents
+        currency:
+          type: string
+          description: Three-letter ISO currency code
+        customer:
+          type: string
+        description:
+          type: string
+
+    CreateSubscription:
+      type: object
+      required:
+        - customer
+        - price
+      properties:
+        customer:
+          type: string
+        price:
+          type: string
+        quantity:
+          type: integer
+          default: 1
+        trial_period_days:
+          type: integer
