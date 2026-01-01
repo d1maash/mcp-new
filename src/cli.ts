@@ -27,6 +27,8 @@ program
   .argument('[project-name]', 'Name of the project to create')
   .option('-t, --typescript', 'Use TypeScript template')
   .option('-p, --python', 'Use Python template')
+  .option('-g, --go', 'Use Go template')
+  .option('-r, --rust', 'Use Rust template')
   .option('--skip-install', 'Skip dependency installation')
   .option('--from-openapi <path>', 'Generate from OpenAPI/Swagger specification')
   .option('--from-prompt', 'Generate tools using AI from text description')
@@ -39,6 +41,8 @@ program
   .description('Initialize MCP server in the current directory')
   .option('-t, --typescript', 'Use TypeScript template')
   .option('-p, --python', 'Use Python template')
+  .option('-g, --go', 'Use Go template')
+  .option('-r, --rust', 'Use Rust template')
   .option('--skip-install', 'Skip dependency installation')
   .option('-f, --force', 'Initialize even if directory contains files')
   .action(initCommand);

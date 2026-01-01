@@ -1,0 +1,40 @@
+package tools
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/mark3labs/mcp-go/mcp"
+)
+
+// ExampleInput represents the input for the example tool
+type ExampleInput struct {
+	Query string `json:"query"`
+}
+
+// ExampleOutput represents the output of the example tool
+type ExampleOutput struct {
+	Result string `json:"result"`
+}
+
+// ExampleTool creates the example tool definition
+func ExampleTool() mcp.Tool {
+	return mcp.NewTool("example_tool",
+		mcp.WithDescription("An example tool that echoes the input"),
+		mcp.WithString("query",
+			mcp.Required(),
+			mcp.Description("The query to echo"),
+		),
+	)
+}
+
+// ExampleHandler handles the example tool execution
+func ExampleHandler(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	query, ok := request.Params.Arguments["query"].(string)
+	if !ok {
+		return mcp.NewToolResultError("query parameter is required"), nil
+	}
+
+	result := fmt.Sprintf("Echo: %s", query)
+	return mcp.NewToolResultText(result), nil
+}

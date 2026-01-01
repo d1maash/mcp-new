@@ -10,6 +10,8 @@ export async function promptLanguage(): Promise<Language> {
       choices: [
         { name: 'TypeScript', value: 'typescript' },
         { name: 'Python', value: 'python' },
+        { name: 'Go', value: 'go' },
+        { name: 'Rust', value: 'rust' },
       ],
       default: 'typescript',
     },

@@ -1,0 +1,46 @@
+use anyhow::Result;
+use rmcp::{
+    model::{CallToolResult, Content, Tool, ToolInputSchema},
+    server::Server,
+    tool,
+};
+use serde_json::{json, Value};
+use std::collections::HashMap;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
+mod tools;
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    // Initialize logging
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::EnvFilter::new(
+            std::env::var("RUST_LOG").unwrap_or_else(|_| "info".into()),
+        ))
+        .with(tracing_subscriber::fmt::layer().with_writer(std::io::stderr))
+        .init();
+
+    tracing::info!("Starting <%= name %> MCP server");
+
+    // Create server
+    let server = Server::builder()
+        .name("<%= name %>")
+        .version("1.0.0")
+<% if (includeExampleTool) { %>
+        .tool(tools::example_tool())
+<% } %>
+<% tools.forEach(function(tool) { %>
+        .tool(tools::<%= tool.name %>_tool())
+<% }); %>
+        .build();
+
+<% if (transport === 'stdio') { %>
+    // Run with STDIO transport
+    server.run_stdio().await?;
+<% } else { %>
+    // Run with SSE transport
+    server.run_sse("0.0.0.0:8080", "/messages").await?;
+<% } %>
+
+    Ok(())
+}

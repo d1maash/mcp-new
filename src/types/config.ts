@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const LanguageSchema = z.enum(['typescript', 'python']);
+export const LanguageSchema = z.enum(['typescript', 'python', 'go', 'rust']);
 export type Language = z.infer<typeof LanguageSchema>;
 
 export const TransportSchema = z.enum(['stdio', 'sse']);
@@ -51,6 +51,8 @@ export interface GeneratorContext {
 export interface CLIOptions {
   typescript?: boolean;
   python?: boolean;
+  go?: boolean;
+  rust?: boolean;
   skipInstall?: boolean;
   fromOpenapi?: string;
   fromPrompt?: boolean;

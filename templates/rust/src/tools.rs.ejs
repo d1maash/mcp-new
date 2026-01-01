@@ -1,0 +1,105 @@
+use rmcp::{
+    model::{CallToolResult, Content, Tool, ToolInputSchema},
+    tool,
+};
+use serde::{Deserialize, Serialize};
+use serde_json::{json, Value};
+use std::collections::HashMap;
+
+<% if (includeExampleTool) { %>
+/// Example tool that echoes the input
+#[derive(Debug, Deserialize)]
+pub struct ExampleToolInput {
+    pub query: String,
+}
+
+pub fn example_tool() -> Tool {
+    Tool {
+        name: "example_tool".to_string(),
+        description: Some("An example tool that echoes the input".to_string()),
+        input_schema: ToolInputSchema {
+            r#type: "object".to_string(),
+            properties: Some({
+                let mut props = HashMap::new();
+                props.insert(
+                    "query".to_string(),
+                    json!({
+                        "type": "string",
+                        "description": "The query to echo"
+                    }),
+                );
+                props
+            }),
+            required: Some(vec!["query".to_string()]),
+        },
+        handler: Box::new(|args| {
+            Box::pin(async move {
+                let input: ExampleToolInput = serde_json::from_value(args)?;
+                Ok(CallToolResult {
+                    content: vec![Content::Text {
+                        text: format!("Echo: {}", input.query),
+                    }],
+                    is_error: None,
+                })
+            })
+        }),
+    }
+}
+<% } %>
+
+<% tools.forEach(function(tool) { %>
+/// <%= tool.description %>
+#[derive(Debug, Deserialize)]
+pub struct <%= tool.name.charAt(0).toUpperCase() + tool.name.slice(1).replace(/_([a-z])/g, (_, c) => c.toUpperCase()) %>Input {
+<% tool.parameters.forEach(function(param) { %>
+<% if (param.type === 'number') { %>
+    pub <%= param.name %>: f64,
+<% } else if (param.type === 'boolean') { %>
+    pub <%= param.name %>: bool,
+<% } else if (param.type === 'array') { %>
+    pub <%= param.name %>: Vec<Value>,
+<% } else if (param.type === 'object') { %>
+    pub <%= param.name %>: HashMap<String, Value>,
+<% } else { %>
+    pub <%= param.name %>: String,
+<% } %>
+<% }); %>
+}
+
+pub fn <%= tool.name %>_tool() -> Tool {
+    Tool {
+        name: "<%= tool.name %>".to_string(),
+        description: Some("<%= tool.description %>".to_string()),
+        input_schema: ToolInputSchema {
+            r#type: "object".to_string(),
+            properties: Some({
+                let mut props = HashMap::new();
+<% tool.parameters.forEach(function(param) { %>
+                props.insert(
+                    "<%= param.name %>".to_string(),
+                    json!({
+                        "type": "<%= param.type %>",
+                        "description": "<%= param.description %>"
+                    }),
+                );
+<% }); %>
+                props
+            }),
+            required: Some(vec![<%= tool.parameters.filter(p => p.required).map(p => '"' + p.name + '".to_string()').join(', ') %>]),
+        },
+        handler: Box::new(|args| {
+            Box::pin(async move {
+                // TODO: Implement <%= tool.name %> logic
+                let input: <%= tool.name.charAt(0).toUpperCase() + tool.name.slice(1).replace(/_([a-z])/g, (_, c) => c.toUpperCase()) %>Input = serde_json::from_value(args.clone())?;
+
+                Ok(CallToolResult {
+                    content: vec![Content::Text {
+                        text: format!("<%= tool.name %> called with: {:?}", args),
+                    }],
+                    is_error: None,
+                })
+            })
+        }),
+    }
+}
+<% }); %>
