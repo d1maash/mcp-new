@@ -9,7 +9,9 @@
       "Bash(cd:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "WebFetch(domain:docs.npmjs.com)",
+      "WebFetch(domain:remarkablemark.org)"
     ]
   }
 }
