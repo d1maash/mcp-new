@@ -33,13 +33,13 @@
     ],
     "author": "Dinmukhanbet Aizharykov <dimashaijarikov@gmail.com>",
     "license": "MIT",
-    "homepage": "https://github.com/d1maash/mcp-generator#readme",
+    "homepage": "https://github.com/d1maash/mcp-new#readme",
     "bugs": {
-        "url": "https://github.com/d1maash/mcp-generator/issues"
+        "url": "https://github.com/d1maash/mcp-new/issues"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/d1maash/mcp-generator.git"
+        "url": "git+https://github.com/d1maash/mcp-new.git"
     },
     "engines": {
         "node": ">=18.0.0"
