@@ -15,8 +15,10 @@ export async function addToolCommand(options: AddToolOptions): Promise<void> {
     // Detect project type
     const isTypeScript = await exists(path.join(currentDir, 'package.json'));
     const isPython = await exists(path.join(currentDir, 'pyproject.toml'));
+    const isGo = await exists(path.join(currentDir, 'go.mod'));
+    const isRust = await exists(path.join(currentDir, 'Cargo.toml'));
 
-    if (!isTypeScript && !isPython) {
+    if (!isTypeScript && !isPython && !isGo && !isRust) {
       logger.error('No MCP server project found in current directory.');
       logger.info('Run this command from the root of your MCP server project.');
       process.exit(1);
@@ -38,8 +40,12 @@ export async function addToolCommand(options: AddToolOptions): Promise<void> {
     // Add tool to project
     if (isTypeScript) {
       await addToolToTypeScript(currentDir, tool);
-    } else {
+    } else if (isPython) {
       await addToolToPython(currentDir, tool);
+    } else if (isGo) {
+      await addToolToGo(currentDir, tool);
+    } else if (isRust) {
+      await addToolToRust(currentDir, tool);
     }
 
     logger.success(`Tool "${tool.name}" added successfully!`);
@@ -252,5 +258,209 @@ function mapTypeToPython(type: string): string {
       return 'dict';
     default:
       return 'str';
+  }
+}
+
+async function addToolToGo(projectDir: string, tool: ToolConfig): Promise<void> {
+  const toolsDir = path.join(projectDir, 'internal', 'tools');
+  const toolFileName = `${tool.name}.go`;
+  const toolFilePath = path.join(toolsDir, toolFileName);
+
+  // Check if tool already exists
+  if (await exists(toolFilePath)) {
+    logger.error(`Tool file already exists: ${toolFilePath}`);
+    process.exit(1);
+  }
+
+  // Generate tool file content
+  const content = generateGoToolFile(tool);
+  await writeFile(toolFilePath, content);
+
+  logger.info(`Created: internal/tools/${toolFileName}`);
+  logger.blank();
+  logger.info('Next steps:');
+  logger.list([
+    `Implement the tool logic in internal/tools/${toolFileName}`,
+    'Import and register the tool in cmd/server/main.go',
+  ]);
+}
+
+async function addToolToRust(projectDir: string, tool: ToolConfig): Promise<void> {
+  const srcDir = path.join(projectDir, 'src');
+  const toolFileName = `${tool.name}.rs`;
+  const toolFilePath = path.join(srcDir, toolFileName);
+
+  // Check if tool already exists
+  if (await exists(toolFilePath)) {
+    logger.error(`Tool file already exists: ${toolFilePath}`);
+    process.exit(1);
+  }
+
+  // Generate tool file content
+  const content = generateRustToolFile(tool);
+  await writeFile(toolFilePath, content);
+
+  logger.info(`Created: src/${toolFileName}`);
+  logger.blank();
+  logger.info('Next steps:');
+  logger.list([
+    `Implement the tool logic in src/${toolFileName}`,
+    `Add "mod ${tool.name};" to src/main.rs`,
+    'Register the tool in the server builder',
+  ]);
+}
+
+function generateGoToolFile(tool: ToolConfig): string {
+  const structFields = tool.parameters
+    .map((p) => `\t${toPascalCase(p.name)} ${mapTypeToGo(p.type)} \`json:"${p.name}"\``)
+    .join('\n');
+
+  return `package tools
+
+import (
+\t"context"
+\t"fmt"
+
+\t"github.com/mark3labs/mcp-go/mcp"
+)
+
+// ${toPascalCase(tool.name)}Input represents the input for the ${tool.name} tool
+type ${toPascalCase(tool.name)}Input struct {
+${structFields || '\t// No parameters'}
+}
+
+// ${toPascalCase(tool.name)}Tool creates the ${tool.name} tool definition
+func ${toPascalCase(tool.name)}Tool() mcp.Tool {
+\treturn mcp.NewTool("${tool.name}",
+\t\tmcp.WithDescription("${tool.description}"),
+${tool.parameters
+  .map((p) => {
+    const mcpType =
+      p.type === 'number'
+        ? 'WithNumber'
+        : p.type === 'boolean'
+          ? 'WithBoolean'
+          : 'WithString';
+    return `\t\tmcp.${mcpType}("${p.name}",
+${p.required ? '\t\t\tmcp.Required(),\n' : ''}\t\t\tmcp.Description("${p.description}"),
+\t\t),`;
+  })
+  .join('\n')}
+\t)
+}
+
+// ${toPascalCase(tool.name)}Handler handles the ${tool.name} tool execution
+func ${toPascalCase(tool.name)}Handler(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+\t// TODO: Implement ${tool.name} logic
+${tool.parameters
+  .map((p) => {
+    const goType = mapTypeToGo(p.type);
+    if (goType === 'float64') {
+      return `\t${p.name}, _ := request.Params.Arguments["${p.name}"].(float64)`;
+    } else if (goType === 'bool') {
+      return `\t${p.name}, _ := request.Params.Arguments["${p.name}"].(bool)`;
+    } else {
+      return `\t${p.name}, _ := request.Params.Arguments["${p.name}"].(string)`;
+    }
+  })
+  .join('\n')}
+
+\treturn mcp.NewToolResultText(fmt.Sprintf("${tool.name} called with: %v", request.Params.Arguments)), nil
+}
+`;
+}
+
+function generateRustToolFile(tool: ToolConfig): string {
+  const structFields = tool.parameters
+    .map((p) => `    pub ${p.name}: ${mapTypeToRust(p.type)},`)
+    .join('\n');
+
+  const required = tool.parameters
+    .filter((p) => p.required)
+    .map((p) => `"${p.name}".to_string()`)
+    .join(', ');
+
+  return `use rmcp::{
+    model::{CallToolResult, Content, Tool, ToolInputSchema},
+    tool,
+};
+use serde::Deserialize;
+use serde_json::{json, Value};
+use std::collections::HashMap;
+
+/// ${tool.description}
+#[derive(Debug, Deserialize)]
+pub struct ${toPascalCase(tool.name)}Input {
+${structFields || '    // No parameters'}
+}
+
+pub fn ${tool.name}_tool() -> Tool {
+    Tool {
+        name: "${tool.name}".to_string(),
+        description: Some("${tool.description}".to_string()),
+        input_schema: ToolInputSchema {
+            r#type: "object".to_string(),
+            properties: Some({
+                let mut props = HashMap::new();
+${tool.parameters
+  .map(
+    (p) => `                props.insert(
+                    "${p.name}".to_string(),
+                    json!({
+                        "type": "${p.type}",
+                        "description": "${p.description}"
+                    }),
+                );`
+  )
+  .join('\n')}
+                props
+            }),
+            required: Some(vec![${required}]),
+        },
+        handler: Box::new(|args| {
+            Box::pin(async move {
+                // TODO: Implement ${tool.name} logic
+                let input: ${toPascalCase(tool.name)}Input = serde_json::from_value(args.clone())?;
+
+                Ok(CallToolResult {
+                    content: vec![Content::Text {
+                        text: format!("${tool.name} called with: {:?}", args),
+                    }],
+                    is_error: None,
+                })
+            })
+        }),
+    }
+}
+`;
+}
+
+function mapTypeToGo(type: string): string {
+  switch (type) {
+    case 'number':
+      return 'float64';
+    case 'boolean':
+      return 'bool';
+    case 'array':
+      return '[]interface{}';
+    case 'object':
+      return 'map[string]interface{}';
+    default:
+      return 'string';
+  }
+}
+
+function mapTypeToRust(type: string): string {
+  switch (type) {
+    case 'number':
+      return 'f64';
+    case 'boolean':
+      return 'bool';
+    case 'array':
+      return 'Vec<Value>';
+    case 'object':
+      return 'HashMap<String, Value>';
+    default:
+      return 'String';
   }
 }

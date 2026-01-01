@@ -11,6 +11,8 @@ import { exists, readFile } from '../utils/file-system.js';
 interface InitOptions {
   typescript?: boolean;
   python?: boolean;
+  go?: boolean;
+  rust?: boolean;
   skipInstall?: boolean;
   force?: boolean;
 }
@@ -23,8 +25,10 @@ export async function initCommand(options: InitOptions): Promise<void> {
     // Check if we're in an existing project
     const hasPackageJson = await exists(path.join(currentDir, 'package.json'));
     const hasPyproject = await exists(path.join(currentDir, 'pyproject.toml'));
+    const hasGoMod = await exists(path.join(currentDir, 'go.mod'));
+    const hasCargoToml = await exists(path.join(currentDir, 'Cargo.toml'));
 
-    if ((hasPackageJson || hasPyproject) && !options.force) {
+    if ((hasPackageJson || hasPyproject || hasGoMod || hasCargoToml) && !options.force) {
       const { proceed } = await inquirer.prompt<{ proceed: boolean }>([
         {
           type: 'confirm',
@@ -46,12 +50,22 @@ export async function initCommand(options: InitOptions): Promise<void> {
       language = 'typescript';
     } else if (options.python) {
       language = 'python';
+    } else if (options.go) {
+      language = 'go';
+    } else if (options.rust) {
+      language = 'rust';
     } else if (hasPackageJson) {
       language = 'typescript';
       logger.info('Detected existing Node.js project, using TypeScript');
     } else if (hasPyproject) {
       language = 'python';
       logger.info('Detected existing Python project');
+    } else if (hasGoMod) {
+      language = 'go';
+      logger.info('Detected existing Go project');
+    } else if (hasCargoToml) {
+      language = 'rust';
+      logger.info('Detected existing Rust project');
     } else {
       language = await promptLanguage();
     }

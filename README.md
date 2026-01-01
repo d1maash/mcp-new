@@ -11,7 +11,7 @@ npx mcp-generator my-server
 ## Features
 
 - **Interactive wizard** — create MCP server through step-by-step prompts
-- **TypeScript and Python** — support for both languages
+- **Multi-language support** — TypeScript, Python, Go, and Rust
 - **OpenAPI generation** — auto-create tools from OpenAPI/Swagger specification
 - **AI generation** — create tools from text description using Claude
 - **Ready-to-use templates** — working code with examples out of the box
@@ -55,6 +55,12 @@ npx mcp-generator my-server -t
 
 # Python project (skips language prompt)
 npx mcp-generator my-server -p
+
+# Go project (skips language prompt)
+npx mcp-generator my-server -g
+
+# Rust project (skips language prompt)
+npx mcp-generator my-server -r
 
 # Skip dependency installation
 npx mcp-generator my-server --skip-install
@@ -110,6 +116,8 @@ npx mcp-generator add-tool
 |------|-------------|
 | `-t, --typescript` | Use TypeScript (skips language prompt) |
 | `-p, --python` | Use Python (skips language prompt) |
+| `-g, --go` | Use Go (skips language prompt) |
+| `-r, --rust` | Use Rust (skips language prompt) |
 | `--skip-install` | Skip dependency installation |
 | `--from-openapi <path>` | Create from OpenAPI specification |
 | `--from-prompt` | Create via AI from description |
@@ -149,6 +157,35 @@ my-server/
         └── example_tool.py
 ```
 
+### Go
+
+```
+my-server/
+├── go.mod
+├── README.md
+├── .gitignore
+├── .env.example
+├── cmd/
+│   └── server/
+│       └── main.go       # Main server file
+└── internal/
+    └── tools/
+        └── example.go
+```
+
+### Rust
+
+```
+my-server/
+├── Cargo.toml
+├── README.md
+├── .gitignore
+├── .env.example
+└── src/
+    ├── main.rs           # Main server file
+    └── tools.rs
+```
+
 ## Development
 
 ```bash
@@ -178,6 +215,8 @@ mcp-generator test-project
 - [MCP Specification](https://spec.modelcontextprotocol.io/)
 - [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk)
 - [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk)
+- [MCP Go SDK](https://github.com/mark3labs/mcp-go)
+- [MCP Rust SDK](https://github.com/modelcontextprotocol/rust-sdk)
 
 ## License
 

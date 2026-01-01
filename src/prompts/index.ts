@@ -1,4 +1,4 @@
-import type { ProjectConfig } from '../types/config.js';
+import type { ProjectConfig, Language } from '../types/config.js';
 import { promptProjectName, promptProjectDescription } from './project-name.js';
 import { promptLanguage } from './language.js';
 import { promptTransport } from './transport.js';
@@ -15,7 +15,7 @@ export interface WizardOptions {
   defaultName?: string;
   skipDescription?: boolean;
   skipAdvanced?: boolean;
-  presetLanguage?: 'typescript' | 'python';
+  presetLanguage?: Language;
 }
 
 export async function runWizard(options: WizardOptions = {}): Promise<ProjectConfig> {
@@ -59,7 +59,7 @@ export async function runWizard(options: WizardOptions = {}): Promise<ProjectCon
   };
 }
 
-export async function runQuickWizard(defaultName?: string, presetLanguage?: 'typescript' | 'python'): Promise<ProjectConfig> {
+export async function runQuickWizard(defaultName?: string, presetLanguage?: Language): Promise<ProjectConfig> {
   const name = await promptProjectName(defaultName);
   // Skip language prompt if preset via CLI flag
   const language = presetLanguage || await promptLanguage();

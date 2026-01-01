@@ -1,0 +1,101 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+
+	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/mark3labs/mcp-go/server"
+)
+
+func main() {
+	// Create MCP server
+	s := server.NewMCPServer(
+		"<%= name %>",
+		"1.0.0",
+		server.WithToolCapabilities(true),
+	)
+
+<% if (includeExampleTool) { %>
+	// Register example tool
+	exampleTool := mcp.NewTool("example_tool",
+		mcp.WithDescription("An example tool that echoes the input"),
+		mcp.WithString("query",
+			mcp.Required(),
+			mcp.Description("The query to echo"),
+		),
+	)
+
+	s.AddTool(exampleTool, exampleToolHandler)
+<% } %>
+
+<% tools.forEach(function(tool) { %>
+	// Register <%= tool.name %> tool
+	<%= tool.name %>Tool := mcp.NewTool("<%= tool.name %>",
+		mcp.WithDescription("<%= tool.description %>"),
+<% tool.parameters.forEach(function(param, index) { %>
+<% if (param.type === 'string') { %>
+		mcp.WithString("<%= param.name %>",
+<% } else if (param.type === 'number') { %>
+		mcp.WithNumber("<%= param.name %>",
+<% } else if (param.type === 'boolean') { %>
+		mcp.WithBoolean("<%= param.name %>",
+<% } else { %>
+		mcp.WithString("<%= param.name %>",
+<% } %>
+<% if (param.required) { %>
+			mcp.Required(),
+<% } %>
+			mcp.Description("<%= param.description %>"),
+		),
+<% }); %>
+	)
+
+	s.AddTool(<%= tool.name %>Tool, <%= tool.name %>Handler)
+<% }); %>
+
+<% if (transport === 'stdio') { %>
+	// Start STDIO server
+	if err := server.ServeStdio(s); err != nil {
+		fmt.Fprintf(os.Stderr, "Server error: %v\n", err)
+		os.Exit(1)
+	}
+<% } else { %>
+	// Start SSE server
+	if err := server.ServeSSE(s, ":8080", "/messages"); err != nil {
+		fmt.Fprintf(os.Stderr, "Server error: %v\n", err)
+		os.Exit(1)
+	}
+<% } %>
+}
+
+<% if (includeExampleTool) { %>
+func exampleToolHandler(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	query, ok := request.Params.Arguments["query"].(string)
+	if !ok {
+		return mcp.NewToolResultError("query parameter is required"), nil
+	}
+
+	return mcp.NewToolResultText(fmt.Sprintf("Echo: %s", query)), nil
+}
+<% } %>
+
+<% tools.forEach(function(tool) { %>
+func <%= tool.name %>Handler(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	// TODO: Implement <%= tool.name %> logic
+<% tool.parameters.forEach(function(param) { %>
+<% if (param.type === 'string') { %>
+	<%= param.name %>, _ := request.Params.Arguments["<%= param.name %>"].(string)
+<% } else if (param.type === 'number') { %>
+	<%= param.name %>, _ := request.Params.Arguments["<%= param.name %>"].(float64)
+<% } else if (param.type === 'boolean') { %>
+	<%= param.name %>, _ := request.Params.Arguments["<%= param.name %>"].(bool)
+<% } else { %>
+	<%= param.name %> := request.Params.Arguments["<%= param.name %>"]
+<% } %>
+<% }); %>
+
+	return mcp.NewToolResultText(fmt.Sprintf("<%= tool.name %> called with: %v", request.Params.Arguments)), nil
+}
+<% }); %>

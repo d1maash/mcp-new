@@ -43,7 +43,15 @@ async function handleWizardGeneration(
   let config: ProjectConfig;
 
   // Determine preset language from CLI flags
-  const presetLanguage = options.typescript ? 'typescript' : options.python ? 'python' : undefined;
+  const presetLanguage = options.typescript
+    ? 'typescript'
+    : options.python
+      ? 'python'
+      : options.go
+        ? 'go'
+        : options.rust
+          ? 'rust'
+          : undefined;
 
   if (options.yes) {
     // Quick mode - use defaults with minimal prompts
@@ -87,7 +95,15 @@ async function handleOpenAPIGeneration(
 
   await generateFromOpenAPI(specPath, {
     name,
-    language: options.typescript ? 'typescript' : options.python ? 'python' : undefined,
+    language: options.typescript
+      ? 'typescript'
+      : options.python
+        ? 'python'
+        : options.go
+          ? 'go'
+          : options.rust
+            ? 'rust'
+            : undefined,
     skipInstall: options.skipInstall,
   });
 }
@@ -98,7 +114,15 @@ async function handlePromptGeneration(
 ): Promise<void> {
   await generateFromPrompt({
     name: projectName,
-    language: options.typescript ? 'typescript' : options.python ? 'python' : undefined,
+    language: options.typescript
+      ? 'typescript'
+      : options.python
+        ? 'python'
+        : options.go
+          ? 'go'
+          : options.rust
+            ? 'rust'
+            : undefined,
     skipInstall: options.skipInstall,
   });
 }

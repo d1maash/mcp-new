@@ -67,12 +67,19 @@ export abstract class BaseGenerator {
       return;
     }
 
-    const isTypescript = this.config.language === 'typescript';
-
-    if (isTypescript) {
-      await this.installNodeDependencies();
-    } else {
-      await this.installPythonDependencies();
+    switch (this.config.language) {
+      case 'typescript':
+        await this.installNodeDependencies();
+        break;
+      case 'python':
+        await this.installPythonDependencies();
+        break;
+      case 'go':
+        await this.installGoDependencies();
+        break;
+      case 'rust':
+        await this.installRustDependencies();
+        break;
     }
   }
 
@@ -111,9 +118,56 @@ export abstract class BaseGenerator {
     );
   }
 
+  private async installGoDependencies(): Promise<void> {
+    const hasGo = await this.checkCommand('go');
+
+    if (!hasGo) {
+      logger.warning('Go not found. Please install dependencies manually:');
+      logger.code('go mod download');
+      return;
+    }
+
+    await withSpinner(
+      'Installing Go dependencies...',
+      async () => {
+        await execa('go', ['mod', 'download'], {
+          cwd: this.outputDir,
+        });
+        await execa('go', ['mod', 'tidy'], {
+          cwd: this.outputDir,
+        });
+      },
+      'Dependencies installed',
+      'Failed to install dependencies'
+    );
+  }
+
+  private async installRustDependencies(): Promise<void> {
+    const hasCargo = await this.checkCommand('cargo');
+
+    if (!hasCargo) {
+      logger.warning('Cargo not found. Please install dependencies manually:');
+      logger.code('cargo build');
+      return;
+    }
+
+    await withSpinner(
+      'Building Rust project...',
+      async () => {
+        await execa('cargo', ['build'], {
+          cwd: this.outputDir,
+        });
+      },
+      'Project built successfully',
+      'Failed to build project'
+    );
+  }
+
   private async checkCommand(command: string): Promise<boolean> {
     try {
-      await execa('which', [command]);
+      // Use 'where' on Windows, 'which' on Unix
+      const checkCmd = process.platform === 'win32' ? 'where' : 'which';
+      await execa(checkCmd, [command]);
       return true;
     } catch {
       return false;
