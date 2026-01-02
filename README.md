@@ -1,199 +1,246 @@
-# mcp-generator
+<div align="center">
 
-> CLI generator for MCP servers in seconds. Like `create-react-app`, but for MCP.
+# mcp-new
 
-## Quick Start
+**CLI generator for MCP servers in seconds**
 
-```bash
-npx mcp-generator my-server
-```
+[![npm version](https://img.shields.io/npm/v/mcp-new.svg?style=flat-square)](https://www.npmjs.com/package/mcp-new)
+[![npm downloads](https://img.shields.io/npm/dm/mcp-new.svg?style=flat-square)](https://www.npmjs.com/package/mcp-new)
+[![license](https://img.shields.io/npm/l/mcp-new.svg?style=flat-square)](https://github.com/d1maash/mcp-new/blob/main/LICENSE)
 
-## Features
+Like `create-react-app`, but for [Model Context Protocol](https://spec.modelcontextprotocol.io/) servers.
 
-- **Interactive wizard** — create MCP server through step-by-step prompts
-- **Multi-language support** — TypeScript, Python, Go, and Rust
-- **OpenAPI generation** — auto-create tools from OpenAPI/Swagger specification
-- **AI generation** — create tools from text description using Claude
-- **Ready-to-use templates** — working code with examples out of the box
+[Getting Started](#-getting-started) •
+[Features](#-features) •
+[Presets](#-presets) •
+[Documentation](#-documentation) •
+[Contributing](#-contributing)
 
-## Installation
+</div>
 
-```bash
-npm install -g mcp-generator
-```
+---
 
-Or use directly via npx:
+## ⚡ Getting Started
 
 ```bash
-npx mcp-generator my-server
+npx mcp-new my-server
 ```
 
-## Usage
-
-### Basic creation
+Or install globally:
 
 ```bash
-npx mcp-generator my-weather-api
-
-# Answer the questions:
-# ? Project name: my-weather-api
-# ? Select language: TypeScript
-# ? Select transport: stdio
-# ? Add example tool? Yes
-
-# Done!
-cd my-weather-api
-npm install
-npm run dev
+npm install -g mcp-new
+mcp-new my-server
 ```
 
-### With flags
+---
 
-```bash
-# TypeScript project (skips language prompt)
-npx mcp-generator my-server -t
+## ✨ Features
 
-# Python project (skips language prompt)
-npx mcp-generator my-server -p
-
-# Go project (skips language prompt)
-npx mcp-generator my-server -g
-
-# Rust project (skips language prompt)
-npx mcp-generator my-server -r
-
-# Skip dependency installation
-npx mcp-generator my-server --skip-install
-
-# Use default values
-npx mcp-generator my-server -y
-```
-
-### From OpenAPI specification
-
-```bash
-npx mcp-generator stripe-mcp --from-openapi ./stripe-api.yaml
-
-# CLI will show found endpoints and let you select the ones you need
-```
-
-### From text description (AI)
-
-```bash
-npx mcp-generator notion-mcp --from-prompt
-
-# Describe your API in the editor
-# Claude will generate tools automatically
-```
-
-Requires `ANTHROPIC_API_KEY` environment variable.
-
-### Initialize in existing project
-
-```bash
-cd my-existing-project
-npx mcp-generator init
-```
-
-### Add new tool
-
-```bash
-cd my-mcp-server
-npx mcp-generator add-tool
-```
-
-## CLI Commands
-
-| Command | Description |
+| Feature | Description |
 |---------|-------------|
-| `mcp-generator <name>` | Create new MCP server |
-| `mcp-generator init` | Initialize MCP in current directory |
-| `mcp-generator add-tool` | Add tool to existing server |
+| 🧙 **Interactive Wizard** | Step-by-step prompts to configure your MCP server |
+| 🌍 **Multi-Language** | TypeScript, Python, Go, and Rust support |
+| 📦 **Preset Templates** | Ready-to-use templates for common use cases |
+| 📄 **OpenAPI Import** | Auto-generate tools from OpenAPI/Swagger specs |
+| 🤖 **AI Generation** | Create tools from natural language using Claude |
+| 📚 **Rich Documentation** | Generated README with examples and Claude Desktop config |
 
-## Options
+---
 
-| Flag | Description |
-|------|-------------|
-| `-t, --typescript` | Use TypeScript (skips language prompt) |
-| `-p, --python` | Use Python (skips language prompt) |
-| `-g, --go` | Use Go (skips language prompt) |
-| `-r, --rust` | Use Rust (skips language prompt) |
-| `--skip-install` | Skip dependency installation |
-| `--from-openapi <path>` | Create from OpenAPI specification |
-| `--from-prompt` | Create via AI from description |
-| `-y, --yes` | Use default values |
+## 🎯 Presets
 
-## Generated Project Structure
+Skip the setup and start with pre-configured tools:
 
-### TypeScript
+```bash
+mcp-new my-project --preset <name> -y
+```
+
+| Preset | Description | Included Tools |
+|--------|-------------|----------------|
+| `database` | Database CRUD operations | `query` `insert` `update` `delete` `list_tables` |
+| `rest-api` | HTTP client wrapper | `http_get` `http_post` `http_put` `http_delete` `set_base_url` |
+| `filesystem` | File system operations | `read_file` `write_file` `list_directory` `search_files` `file_info` |
+
+<details>
+<summary>📋 Example: Database preset</summary>
+
+```bash
+mcp-new my-db --preset database -t -y
+```
+
+Creates a TypeScript MCP server with these tools ready to implement:
+
+- **query** — Execute SQL queries with parameters
+- **insert** — Insert records into tables
+- **update** — Update existing records
+- **delete** — Delete records from tables
+- **list_tables** — List all database tables
+
+</details>
+
+---
+
+## 🚀 Usage
+
+### Basic Creation
+
+```bash
+# Interactive mode
+mcp-new my-server
+
+# With language flag
+mcp-new my-server -t          # TypeScript
+mcp-new my-server -p          # Python
+mcp-new my-server -g          # Go
+mcp-new my-server -r          # Rust
+
+# Skip prompts with defaults
+mcp-new my-server -t -y
+```
+
+### From OpenAPI Specification
+
+```bash
+mcp-new my-api --from-openapi ./openapi.yaml
+```
+
+Select which endpoints to include as MCP tools.
+
+### From AI Description
+
+```bash
+export ANTHROPIC_API_KEY=your-key
+mcp-new my-server --from-prompt
+```
+
+Describe your API in natural language, Claude generates the tools.
+
+### Additional Commands
+
+```bash
+# Initialize in existing directory
+mcp-new init
+
+# Add a new tool to existing project
+mcp-new add-tool
+```
+
+---
+
+## 📖 Documentation
+
+### CLI Reference
+
+```
+Usage: mcp-new [options] [command] [project-name]
+
+Options:
+  -t, --typescript       Use TypeScript
+  -p, --python           Use Python
+  -g, --go               Use Go
+  -r, --rust             Use Rust
+  --preset <name>        Use preset (database, rest-api, filesystem)
+  --from-openapi <path>  Generate from OpenAPI spec
+  --from-prompt          Generate using AI
+  --skip-install         Skip dependency installation
+  -y, --yes              Use defaults
+  -V, --version          Show version
+  -h, --help             Show help
+
+Commands:
+  init                   Initialize in current directory
+  add-tool               Add tool to existing project
+```
+
+### Generated Project Structure
+
+<details>
+<summary>TypeScript</summary>
 
 ```
 my-server/
+├── src/
+│   └── index.ts
 ├── package.json
 ├── tsconfig.json
 ├── README.md
 ├── .gitignore
-├── .env.example
-└── src/
-    ├── index.ts          # Main server file
-    └── tools/
-        └── example-tool.ts
+└── .env.example
 ```
 
-### Python
+</details>
+
+<details>
+<summary>Python</summary>
 
 ```
 my-server/
+├── src/
+│   ├── __init__.py
+│   ├── server.py
+│   └── tools/
+│       └── __init__.py
 ├── pyproject.toml
 ├── requirements.txt
 ├── README.md
 ├── .gitignore
-├── .env.example
-└── src/
-    ├── __init__.py
-    ├── server.py         # Main server file
-    └── tools/
-        ├── __init__.py
-        └── example_tool.py
+└── .env.example
 ```
 
-### Go
+</details>
+
+<details>
+<summary>Go</summary>
 
 ```
 my-server/
+├── cmd/
+│   └── server/
+│       └── main.go
+├── internal/
+│   └── tools/
 ├── go.mod
 ├── README.md
 ├── .gitignore
-├── .env.example
-├── cmd/
-│   └── server/
-│       └── main.go       # Main server file
-└── internal/
-    └── tools/
-        └── example.go
+└── .env.example
 ```
 
-### Rust
+</details>
+
+<details>
+<summary>Rust</summary>
 
 ```
 my-server/
+├── src/
+│   ├── main.rs
+│   └── tools.rs
 ├── Cargo.toml
 ├── README.md
 ├── .gitignore
-├── .env.example
-└── src/
-    ├── main.rs           # Main server file
-    └── tools.rs
+└── .env.example
 ```
 
-## Development
+</details>
+
+### Generated README
+
+Each project includes a detailed README with:
+
+- ✅ Parameter tables for each tool
+- ✅ JSON examples for tool calls
+- ✅ Claude Desktop configuration snippet
+- ✅ Project structure overview
+
+---
+
+## 🛠 Development
 
 ```bash
-# Clone repository
-git clone https://github.com/d1maash/mcp-generator.git
-cd mcp-generator
-
-# Install dependencies
+# Clone and install
+git clone https://github.com/d1maash/mcp-new.git
+cd mcp-new
 npm install
 
 # Development
@@ -202,22 +249,45 @@ npm run dev
 # Build
 npm run build
 
-# Tests
-npm test
-
-# Local CLI testing
+# Test locally
 npm link
-mcp-generator test-project
+mcp-new test-project --preset database -t -y
 ```
 
-## Links
+---
+
+## 🔗 Resources
 
 - [MCP Specification](https://spec.modelcontextprotocol.io/)
-- [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk)
-- [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk)
-- [MCP Go SDK](https://github.com/mark3labs/mcp-go)
-- [MCP Rust SDK](https://github.com/modelcontextprotocol/rust-sdk)
+- [TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk)
+- [Python SDK](https://github.com/modelcontextprotocol/python-sdk)
+- [Go SDK](https://github.com/mark3labs/mcp-go)
+- [Rust SDK](https://github.com/modelcontextprotocol/rust-sdk)
 
-## License
+---
 
-MIT
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+MIT © [Dinmukhanbet Aizharykov](https://github.com/d1maash)
+
+---
+
+<div align="center">
+
+**[⬆ Back to top](#mcp-new)**
+
+Made with ❤️ for the MCP community
+
+</div>

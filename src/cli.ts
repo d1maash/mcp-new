@@ -11,16 +11,60 @@ const program = new Command();
 // ASCII art logo
 const logo = `
   ${chalk.cyan('╔═══════════════════════════════════════╗')}
-  ${chalk.cyan('║')}   ${chalk.bold.white('mcp-generator')}                      ${chalk.cyan('║')}
+  ${chalk.cyan('║')}   ${chalk.bold.white('mcp-new')}                            ${chalk.cyan('║')}
   ${chalk.cyan('║')}   ${chalk.gray('Generate MCP servers in seconds')}    ${chalk.cyan('║')}
   ${chalk.cyan('╚═══════════════════════════════════════╝')}
 `;
 
+// Examples section
+const examples = `
+${chalk.bold('Examples:')}
+
+  ${chalk.gray('# Create a new MCP server with interactive wizard')}
+  ${chalk.cyan('$')} mcp-new my-server
+
+  ${chalk.gray('# Create TypeScript server with defaults')}
+  ${chalk.cyan('$')} mcp-new my-server -t -y
+
+  ${chalk.gray('# Create Python server')}
+  ${chalk.cyan('$')} mcp-new my-server -p
+
+  ${chalk.gray('# Create from preset template')}
+  ${chalk.cyan('$')} mcp-new my-db --preset database
+  ${chalk.cyan('$')} mcp-new my-api --preset rest-api
+  ${chalk.cyan('$')} mcp-new my-fs --preset filesystem
+
+  ${chalk.gray('# Create from OpenAPI specification')}
+  ${chalk.cyan('$')} mcp-new my-api --from-openapi ./openapi.yaml
+
+  ${chalk.gray('# Create using AI (requires ANTHROPIC_API_KEY)')}
+  ${chalk.cyan('$')} mcp-new my-server --from-prompt
+
+${chalk.bold('Available Presets:')}
+
+  ${chalk.yellow('database')}     Database CRUD tools (query, insert, update, delete, list_tables)
+  ${chalk.yellow('rest-api')}     REST API tools (http_get, http_post, http_put, http_delete, set_base_url)
+  ${chalk.yellow('filesystem')}   File system tools (read_file, write_file, list_directory, search_files, file_info)
+
+${chalk.bold('Supported Languages:')}
+
+  ${chalk.green('-t, --typescript')}   TypeScript with npm
+  ${chalk.green('-p, --python')}       Python with pip
+  ${chalk.green('-g, --go')}           Go with go modules
+  ${chalk.green('-r, --rust')}         Rust with cargo
+
+${chalk.bold('Learn More:')}
+
+  Documentation:  ${chalk.underline('https://github.com/d1maash/mcp-new')}
+  MCP Spec:       ${chalk.underline('https://spec.modelcontextprotocol.io')}
+`;
+
 program
-  .name('mcp-generator')
+  .name('mcp-new')
   .description('CLI tool for generating MCP (Model Context Protocol) servers')
-  .version('0.1.0')
-  .addHelpText('beforeAll', logo);
+  .version('1.2.0')
+  .addHelpText('beforeAll', logo)
+  .addHelpText('after', examples);
 
 // Main create command
 program
@@ -32,6 +76,7 @@ program
   .option('--skip-install', 'Skip dependency installation')
   .option('--from-openapi <path>', 'Generate from OpenAPI/Swagger specification')
   .option('--from-prompt', 'Generate tools using AI from text description')
+  .option('--preset <name>', 'Use a preset template (database, rest-api, filesystem)')
   .option('-y, --yes', 'Skip prompts and use defaults')
   .action(createCommand);
 
@@ -45,6 +90,18 @@ program
   .option('-r, --rust', 'Use Rust template')
   .option('--skip-install', 'Skip dependency installation')
   .option('-f, --force', 'Initialize even if directory contains files')
+  .addHelpText('after', `
+${chalk.bold('Examples:')}
+
+  ${chalk.gray('# Initialize in current directory')}
+  ${chalk.cyan('$')} mcp-new init
+
+  ${chalk.gray('# Initialize with TypeScript')}
+  ${chalk.cyan('$')} mcp-new init -t
+
+  ${chalk.gray('# Force initialize (overwrite existing files)')}
+  ${chalk.cyan('$')} mcp-new init -f
+`)
   .action(initCommand);
 
 // Add tool command
@@ -52,6 +109,15 @@ program
   .command('add-tool')
   .description('Add a new tool to an existing MCP server')
   .option('-n, --name <name>', 'Tool name (snake_case)')
+  .addHelpText('after', `
+${chalk.bold('Examples:')}
+
+  ${chalk.gray('# Add tool interactively')}
+  ${chalk.cyan('$')} mcp-new add-tool
+
+  ${chalk.gray('# Add tool with name')}
+  ${chalk.cyan('$')} mcp-new add-tool -n my_new_tool
+`)
   .action(addToolCommand);
 
 // Parse arguments

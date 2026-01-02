@@ -48,6 +48,9 @@ export interface GeneratorContext {
   templateDir: string;
 }
 
+export const PresetIdSchema = z.enum(['database', 'rest-api', 'filesystem']);
+export type PresetId = z.infer<typeof PresetIdSchema>;
+
 export interface CLIOptions {
   typescript?: boolean;
   python?: boolean;
@@ -56,5 +59,6 @@ export interface CLIOptions {
   skipInstall?: boolean;
   fromOpenapi?: string;
   fromPrompt?: boolean;
+  preset?: string;
   yes?: boolean;
 }
