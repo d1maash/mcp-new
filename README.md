@@ -256,6 +256,20 @@ mcp-new test-project --preset database -t -y
 
 ---
 
+## 📚 Full Documentation
+
+For detailed documentation, see the [docs](./docs) folder:
+
+| Document | Description |
+|----------|-------------|
+| [Getting Started](./docs/getting-started.md) | Installation and first steps |
+| [CLI Reference](./docs/cli-reference.md) | Complete command reference |
+| [Presets](./docs/presets.md) | Pre-configured templates |
+| [Templates](./docs/templates.md) | Language-specific guides |
+| [OpenAPI Integration](./docs/openapi.md) | Generate from specs |
+| [AI Generation](./docs/ai-generation.md) | Create with Claude |
+| [Contributing](./docs/contributing.md) | How to contribute |
+
 ## 🔗 Resources
 
 - [MCP Specification](https://spec.modelcontextprotocol.io/)
