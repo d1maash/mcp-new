@@ -10,6 +10,8 @@ export * from './language.js';
 export * from './transport.js';
 export * from './tools.js';
 export * from './resources.js';
+export * from './generation-method.js';
+export * from './preset.js';
 
 export interface WizardOptions {
   defaultName?: string;

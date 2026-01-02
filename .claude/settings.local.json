@@ -11,7 +11,12 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "WebFetch(domain:docs.npmjs.com)",
-      "WebFetch(domain:remarkablemark.org)"
+      "WebFetch(domain:remarkablemark.org)",
+      "Bash(wc:*)",
+      "Bash(node:*)",
+      "Bash(npm link)",
+      "Bash(npm link:*)",
+      "Bash(mcp-new:*)"
     ]
   }
 }

@@ -52,11 +52,37 @@ export const logger = {
 
   nextSteps: (projectName: string, language: string) => {
     logger.blank();
+
+    let installCmd: string;
+    let runCmd: string;
+
+    switch (language) {
+      case 'typescript':
+        installCmd = 'npm install';
+        runCmd = 'npm run dev';
+        break;
+      case 'python':
+        installCmd = 'pip install -e .';
+        runCmd = 'python -m src.server';
+        break;
+      case 'go':
+        installCmd = 'go mod download';
+        runCmd = 'go run ./cmd/server';
+        break;
+      case 'rust':
+        installCmd = 'cargo build';
+        runCmd = 'cargo run';
+        break;
+      default:
+        installCmd = 'npm install';
+        runCmd = 'npm run dev';
+    }
+
     logger.box('Next steps:', [
       '',
       `  ${chalk.cyan('cd')} ${projectName}`,
-      language === 'typescript' ? `  ${chalk.cyan('npm install')}` : `  ${chalk.cyan('pip install -e .')}`,
-      language === 'typescript' ? `  ${chalk.cyan('npm run dev')}` : `  ${chalk.cyan('python -m src.server')}`,
+      `  ${chalk.cyan(installCmd)}`,
+      `  ${chalk.cyan(runCmd)}`,
       '',
     ]);
   },

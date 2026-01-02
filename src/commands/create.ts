@@ -4,6 +4,7 @@ import { runWizard, runQuickWizard } from '../prompts/index.js';
 import { generateFromWizard } from '../generators/from-wizard.js';
 import { generateFromOpenAPI } from '../generators/from-openapi.js';
 import { generateFromPrompt } from '../generators/from-prompt.js';
+import { generateFromPreset, validatePresetId } from '../generators/from-preset.js';
 import { logger } from '../utils/logger.js';
 import { exists } from '../utils/file-system.js';
 
@@ -12,6 +13,12 @@ export async function createCommand(
   options: CLIOptions
 ): Promise<void> {
   try {
+    // Handle --preset flag
+    if (options.preset) {
+      await handlePresetGeneration(projectName, options);
+      return;
+    }
+
     // Handle --from-openapi flag
     if (options.fromOpenapi) {
       await handleOpenAPIGeneration(projectName, options);
@@ -124,5 +131,31 @@ async function handlePromptGeneration(
             ? 'rust'
             : undefined,
     skipInstall: options.skipInstall,
+  });
+}
+
+async function handlePresetGeneration(
+  projectName: string | undefined,
+  options: CLIOptions
+): Promise<void> {
+  const presetId = options.preset!;
+
+  // Validate preset ID
+  validatePresetId(presetId);
+
+  await generateFromPreset({
+    projectName,
+    presetId: presetId as 'database' | 'rest-api' | 'filesystem',
+    language: options.typescript
+      ? 'typescript'
+      : options.python
+        ? 'python'
+        : options.go
+          ? 'go'
+          : options.rust
+            ? 'rust'
+            : undefined,
+    skipInstall: options.skipInstall,
+    useDefaults: options.yes,
   });
 }
