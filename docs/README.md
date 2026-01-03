@@ -21,6 +21,15 @@ Welcome to the mcp-new documentation! This guide will help you create MCP server
 - **Have an OpenAPI spec?** See [OpenAPI Integration](./openapi.md)
 - **Need CLI help?** View [CLI Reference](./cli-reference.md)
 
+## 🛠 Utility Commands
+
+| Command | Description |
+|---------|-------------|
+| `mcp-new list-presets` | List all available preset templates |
+| `mcp-new validate` | Validate current MCP server project |
+| `mcp-new upgrade` | Upgrade MCP SDK to latest version |
+| `mcp-new upgrade --check` | Check for SDK updates without installing |
+
 ## 💡 What is MCP?
 
 [Model Context Protocol (MCP)](https://spec.modelcontextprotocol.io/) is an open protocol that enables seamless integration between LLM applications and external data sources and tools.

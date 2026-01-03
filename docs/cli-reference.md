@@ -128,6 +128,136 @@ mcp-new add-tool -n fetch_data
 
 ---
 
+### list-presets
+
+List all available preset templates with their tools.
+
+```bash
+mcp-new list-presets
+```
+
+#### Output
+
+Shows each preset with:
+- Preset name and description
+- List of included tools with parameter counts
+- Usage examples
+
+#### Example
+
+```bash
+mcp-new list-presets
+```
+
+Output:
+```
+Available Presets
+────────────────────────────────────────────────────────────
+
+  database
+  Tools for database operations: query, insert, update, delete
+
+  Tools:
+    • query 2 params
+    • insert 2 params
+    • update 3 params
+    • delete 2 params
+    • list_tables no params
+```
+
+---
+
+### validate
+
+Validate the current MCP server project structure and dependencies.
+
+```bash
+mcp-new validate
+```
+
+#### What It Checks
+
+| Check | Description |
+|-------|-------------|
+| Project config | Presence of package.json, pyproject.toml, go.mod, or Cargo.toml |
+| MCP SDK | Verifies MCP SDK dependency is installed |
+| Entry point | Checks for main server file |
+| SDK imports | Validates MCP SDK usage in code |
+
+#### Examples
+
+```bash
+# Validate current project
+cd my-server
+mcp-new validate
+```
+
+#### Output
+
+```
+Validating MCP Server
+──────────────────────────────────────────────────
+
+i Detected language: typescript
+i MCP SDK version: ^1.0.0
+i Entry point: src/index.ts
+i TypeScript config: tsconfig.json
+
+✓ MCP server is valid!
+```
+
+---
+
+### upgrade
+
+Upgrade MCP SDK to the latest version.
+
+```bash
+mcp-new upgrade [options]
+```
+
+#### Options
+
+| Option | Alias | Description |
+|--------|-------|-------------|
+| `--check` | `-c` | Check for updates without installing |
+| `--help` | `-h` | Show help |
+
+#### Supported Package Managers
+
+| Language | Package Manager | SDK Package |
+|----------|-----------------|-------------|
+| TypeScript | npm | @modelcontextprotocol/sdk |
+| Python | pip | mcp |
+| Go | go modules | github.com/mark3labs/mcp-go |
+| Rust | cargo | rmcp |
+
+#### Examples
+
+```bash
+# Upgrade to latest version
+cd my-server
+mcp-new upgrade
+
+# Check for updates only
+mcp-new upgrade --check
+```
+
+#### Output
+
+```
+MCP SDK Upgrade
+──────────────────────────────────────────────────
+
+i Package: @modelcontextprotocol/sdk
+i Current version: 1.0.0
+i Latest version: 1.25.1
+
+✓ Upgraded to @modelcontextprotocol/sdk@1.25.1
+```
+
+---
+
 ## Language Flags
 
 Choose the programming language for your project:
