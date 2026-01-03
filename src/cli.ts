@@ -5,6 +5,9 @@ import chalk from 'chalk';
 import { createCommand } from './commands/create.js';
 import { initCommand } from './commands/init.js';
 import { addToolCommand } from './commands/add-tool.js';
+import { listPresetsCommand } from './commands/list-presets.js';
+import { validateCommand } from './commands/validate.js';
+import { upgradeCommand } from './commands/upgrade.js';
 
 const program = new Command();
 
@@ -62,7 +65,7 @@ ${chalk.bold('Learn More:')}
 program
   .name('mcp-new')
   .description('CLI tool for generating MCP (Model Context Protocol) servers')
-  .version('1.2.1')
+  .version('1.2.2')
   .addHelpText('beforeAll', logo)
   .addHelpText('after', examples);
 
@@ -119,6 +122,58 @@ ${chalk.bold('Examples:')}
   ${chalk.cyan('$')} mcp-new add-tool -n my_new_tool
 `)
   .action(addToolCommand);
+
+// List presets command
+program
+  .command('list-presets')
+  .description('List all available preset templates')
+  .addHelpText('after', `
+${chalk.bold('Examples:')}
+
+  ${chalk.gray('# Show all presets with their tools')}
+  ${chalk.cyan('$')} mcp-new list-presets
+`)
+  .action(listPresetsCommand);
+
+// Validate command
+program
+  .command('validate')
+  .description('Validate the current MCP server project')
+  .addHelpText('after', `
+${chalk.bold('Examples:')}
+
+  ${chalk.gray('# Validate current project')}
+  ${chalk.cyan('$')} mcp-new validate
+
+${chalk.bold('Checks:')}
+  • Project configuration (package.json, pyproject.toml, etc.)
+  • MCP SDK dependency presence and version
+  • Entry point file existence
+  • Basic project structure
+`)
+  .action(validateCommand);
+
+// Upgrade command
+program
+  .command('upgrade')
+  .description('Upgrade MCP SDK to the latest version')
+  .option('-c, --check', 'Check for updates without installing')
+  .addHelpText('after', `
+${chalk.bold('Examples:')}
+
+  ${chalk.gray('# Upgrade MCP SDK to latest version')}
+  ${chalk.cyan('$')} mcp-new upgrade
+
+  ${chalk.gray('# Check for updates without installing')}
+  ${chalk.cyan('$')} mcp-new upgrade --check
+
+${chalk.bold('Supported languages:')}
+  • TypeScript/JavaScript (npm)
+  • Python (pip)
+  • Go (go modules)
+  • Rust (cargo)
+`)
+  .action(upgradeCommand);
 
 // Parse arguments
 program.parse();

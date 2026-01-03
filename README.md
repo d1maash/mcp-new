@@ -124,6 +124,18 @@ mcp-new init
 
 # Add a new tool to existing project
 mcp-new add-tool
+
+# List all available presets
+mcp-new list-presets
+
+# Validate current MCP server project
+mcp-new validate
+
+# Upgrade MCP SDK to latest version
+mcp-new upgrade
+
+# Check for updates without installing
+mcp-new upgrade --check
 ```
 
 ---
@@ -151,6 +163,9 @@ Options:
 Commands:
   init                   Initialize in current directory
   add-tool               Add tool to existing project
+  list-presets           List all available preset templates
+  validate               Validate current MCP server project
+  upgrade                Upgrade MCP SDK to latest version
 ```
 
 ### Generated Project Structure
