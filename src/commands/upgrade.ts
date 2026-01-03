@@ -144,7 +144,7 @@ async function upgradeNodePackage(projectDir: string, info: PackageInfo): Promis
   await execa('npm', ['install'], { cwd: projectDir });
 }
 
-async function checkPythonPackage(projectDir: string): Promise<PackageInfo> {
+async function checkPythonPackage(_projectDir: string): Promise<PackageInfo> {
   const packageName = 'mcp';
   let current: string | null = null;
   let latest: string | null = null;
