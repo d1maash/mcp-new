@@ -1,9 +1,10 @@
-import type { ProjectConfig, Language } from '../types/config.js';
+import type { ProjectConfig, Language, JavaBuildTool } from '../types/config.js';
 import { promptProjectName, promptProjectDescription } from './project-name.js';
 import { promptLanguage } from './language.js';
 import { promptTransport } from './transport.js';
 import { promptIncludeExampleTool, promptAddTools, promptMultipleTools } from './tools.js';
 import { promptAddResources, promptMultipleResources } from './resources.js';
+import { promptJavaBuildTool } from './java-build-tool.js';
 
 export * from './project-name.js';
 export * from './language.js';
@@ -12,12 +13,14 @@ export * from './tools.js';
 export * from './resources.js';
 export * from './generation-method.js';
 export * from './preset.js';
+export * from './java-build-tool.js';
 
 export interface WizardOptions {
   defaultName?: string;
   skipDescription?: boolean;
   skipAdvanced?: boolean;
   presetLanguage?: Language;
+  presetJavaBuildTool?: JavaBuildTool;
 }
 
 export async function runWizard(options: WizardOptions = {}): Promise<ProjectConfig> {
@@ -29,7 +32,14 @@ export async function runWizard(options: WizardOptions = {}): Promise<ProjectCon
   }
 
   // Skip language prompt if preset via CLI flag
-  const language = options.presetLanguage || await promptLanguage();
+  const language = options.presetLanguage || (await promptLanguage());
+
+  // Prompt for Java build tool if Java is selected
+  let javaBuildTool: JavaBuildTool | undefined;
+  if (language === 'java' || language === 'kotlin') {
+    javaBuildTool = options.presetJavaBuildTool || (await promptJavaBuildTool());
+  }
+
   const transport = await promptTransport();
   const includeExampleTool = await promptIncludeExampleTool();
 
@@ -58,15 +68,32 @@ export async function runWizard(options: WizardOptions = {}): Promise<ProjectCon
     includeExampleTool,
     skipInstall: false,
     initGit: true,
+    javaBuildTool,
   };
 }
 
-export async function runQuickWizard(defaultName?: string, presetLanguage?: Language): Promise<ProjectConfig> {
-  const name = await promptProjectName(defaultName);
+export async function runQuickWizard(
+  defaultName?: string,
+  presetLanguage?: Language,
+  presetJavaBuildTool?: JavaBuildTool
+): Promise<ProjectConfig> {
+  // Use provided name or prompt for it
+  const name = defaultName || (await promptProjectName());
+
   // Skip language prompt if preset via CLI flag
-  const language = presetLanguage || await promptLanguage();
-  const transport = await promptTransport();
-  const includeExampleTool = await promptIncludeExampleTool();
+  const language = presetLanguage || (await promptLanguage());
+
+  // Use provided Java build tool or prompt if Java/Kotlin
+  let javaBuildTool: JavaBuildTool | undefined;
+  if (language === 'java' || language === 'kotlin') {
+    javaBuildTool = presetJavaBuildTool || (await promptJavaBuildTool());
+  }
+
+  // Default transport for quick wizard
+  const transport = 'stdio';
+
+  // Default to include example tool
+  const includeExampleTool = true;
 
   return {
     name,
@@ -78,5 +105,6 @@ export async function runQuickWizard(defaultName?: string, presetLanguage?: Lang
     includeExampleTool,
     skipInstall: false,
     initGit: true,
+    javaBuildTool,
   };
 }

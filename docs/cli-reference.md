@@ -32,6 +32,12 @@ mcp-new <project-name> [options]
 | `--python` | `-p` | Use Python template |
 | `--go` | `-g` | Use Go template |
 | `--rust` | `-r` | Use Rust template |
+| `--java` | `-j` | Use Java template |
+| `--kotlin` | `-k` | Use Kotlin template |
+| `--csharp` | `-c` | Use C# (.NET) template |
+| `--elixir` | `-e` | Use Elixir template |
+| `--maven` | | Use Maven build tool (Java/Kotlin) |
+| `--gradle` | | Use Gradle build tool (Java/Kotlin) |
 | `--preset <name>` | | Use preset template |
 | `--from-openapi <path>` | | Generate from OpenAPI spec |
 | `--from-prompt` | | Generate using AI |
@@ -80,6 +86,12 @@ mcp-new init [options]
 | `--python` | `-p` | Use Python template |
 | `--go` | `-g` | Use Go template |
 | `--rust` | `-r` | Use Rust template |
+| `--java` | `-j` | Use Java template |
+| `--kotlin` | `-k` | Use Kotlin template |
+| `--csharp` | `-c` | Use C# (.NET) template |
+| `--elixir` | `-e` | Use Elixir template |
+| `--maven` | | Use Maven build tool (Java/Kotlin) |
+| `--gradle` | | Use Gradle build tool (Java/Kotlin) |
 | `--skip-install` | | Skip dependency installation |
 | `--force` | `-f` | Initialize even if directory has files |
 | `--help` | `-h` | Show help |
@@ -93,6 +105,9 @@ mcp-new init
 
 # Initialize with TypeScript
 mcp-new init -t
+
+# Initialize with Java and Gradle
+mcp-new init -j --gradle
 
 # Force initialize (overwrite existing)
 mcp-new init -f
@@ -258,6 +273,88 @@ i Latest version: 1.25.1
 
 ---
 
+## Monorepo Commands
+
+Manage multiple MCP servers in a single workspace.
+
+### monorepo init
+
+Initialize a new monorepo workspace.
+
+```bash
+mcp-new monorepo init [workspace-name] [options]
+```
+
+#### Options
+
+| Option | Alias | Description |
+|--------|-------|-------------|
+| `--force` | `-f` | Initialize even if directory contains files |
+
+#### Examples
+
+```bash
+# Create new workspace
+mcp-new monorepo init my-workspace
+
+# Force create
+mcp-new monorepo init my-workspace -f
+```
+
+---
+
+### monorepo add
+
+Add a new MCP server to the workspace.
+
+```bash
+mcp-new monorepo add [server-name] [options]
+```
+
+#### Options
+
+| Option | Alias | Description |
+|--------|-------|-------------|
+| `--name <name>` | `-n` | Server name |
+| `--typescript` | `-t` | Use TypeScript template |
+| `--python` | `-p` | Use Python template |
+| `--go` | `-g` | Use Go template |
+| `--rust` | `-r` | Use Rust template |
+| `--java` | `-j` | Use Java template |
+| `--kotlin` | `-k` | Use Kotlin template |
+| `--csharp` | `-c` | Use C# (.NET) template |
+| `--elixir` | `-e` | Use Elixir template |
+| `--maven` | | Use Maven build tool (Java/Kotlin) |
+| `--gradle` | | Use Gradle build tool (Java/Kotlin) |
+| `--skip-install` | | Skip dependency installation |
+
+#### Examples
+
+```bash
+# Add TypeScript server
+mcp-new monorepo add api-server -t
+
+# Add Python server
+mcp-new monorepo add data-service -p
+
+# Add Java server with Gradle
+mcp-new monorepo add backend -j --gradle
+```
+
+---
+
+### monorepo list
+
+List all servers in the workspace.
+
+```bash
+mcp-new monorepo list
+```
+
+See [Monorepo Documentation](./monorepo.md) for more details.
+
+---
+
 ## Language Flags
 
 Choose the programming language for your project:
@@ -268,6 +365,10 @@ Choose the programming language for your project:
 | `-p, --python` | Python | pip |
 | `-g, --go` | Go | go modules |
 | `-r, --rust` | Rust | cargo |
+| `-j, --java` | Java | Maven/Gradle |
+| `-k, --kotlin` | Kotlin | Maven/Gradle |
+| `-c, --csharp` | C# (.NET) | dotnet |
+| `-e, --elixir` | Elixir | mix |
 
 If no language flag is provided, you'll be prompted to choose.
 

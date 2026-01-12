@@ -1,11 +1,12 @@
 import { BaseGenerator, createGeneratorContext } from './base.js';
-import type { ProjectConfig, GeneratorContext, Language } from '../types/config.js';
+import type { ProjectConfig, GeneratorContext, Language, JavaBuildTool } from '../types/config.js';
 import { getPreset, isValidPresetId, type PresetId } from '../presets/index.js';
 import { logger } from '../utils/logger.js';
 import { withSpinner } from '../utils/spinner.js';
 import { promptProjectName, promptProjectDescription } from '../prompts/project-name.js';
 import { promptLanguage } from '../prompts/language.js';
 import { promptTransport } from '../prompts/transport.js';
+import { promptJavaBuildTool } from '../prompts/java-build-tool.js';
 
 export class PresetGenerator extends BaseGenerator {
   private presetName: string;
@@ -54,7 +55,7 @@ export class PresetGenerator extends BaseGenerator {
     logger.success(`Project ${this.config.name} created successfully!`);
     logger.info(`Preset: ${this.presetName}`);
     logger.info(`Tools included: ${this.config.tools.map((t) => t.name).join(', ')}`);
-    logger.nextSteps(this.config.name, this.config.language);
+    logger.nextSteps(this.config.name, this.config.language, this.config.javaBuildTool);
   }
 }
 
@@ -64,6 +65,7 @@ export interface PresetGeneratorOptions {
   language?: Language;
   skipInstall?: boolean;
   useDefaults?: boolean;
+  javaBuildTool?: JavaBuildTool;
 }
 
 export async function generateFromPreset(options: PresetGeneratorOptions): Promise<void> {
@@ -79,7 +81,15 @@ export async function generateFromPreset(options: PresetGeneratorOptions): Promi
   const description = options.useDefaults ? '' : await promptProjectDescription();
 
   // Get language (skip prompt if already provided or using defaults)
-  const language = options.language || (options.useDefaults ? 'typescript' : await promptLanguage());
+  const language =
+    options.language || (options.useDefaults ? 'typescript' : await promptLanguage());
+
+  // Get Java build tool if Java/Kotlin
+  let javaBuildTool: JavaBuildTool | undefined;
+  if (language === 'java' || language === 'kotlin') {
+    javaBuildTool =
+      options.javaBuildTool || (options.useDefaults ? 'maven' : await promptJavaBuildTool());
+  }
 
   // Get transport (skip if using defaults)
   const transport = options.useDefaults ? 'stdio' : await promptTransport();
@@ -94,6 +104,7 @@ export async function generateFromPreset(options: PresetGeneratorOptions): Promi
     includeExampleTool: false,
     skipInstall: options.skipInstall || false,
     initGit: true,
+    javaBuildTool,
   };
 
   const context = createGeneratorContext(config);
@@ -104,9 +115,7 @@ export async function generateFromPreset(options: PresetGeneratorOptions): Promi
 export function validatePresetId(presetId: string): presetId is PresetId {
   if (!isValidPresetId(presetId)) {
     const validPresets = ['database', 'rest-api', 'filesystem'];
-    throw new Error(
-      `Invalid preset "${presetId}". Valid presets are: ${validPresets.join(', ')}`
-    );
+    throw new Error(`Invalid preset "${presetId}". Valid presets are: ${validPresets.join(', ')}`);
   }
   return true;
 }

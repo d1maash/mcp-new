@@ -1,7 +1,19 @@
 import { z } from 'zod';
 
-export const LanguageSchema = z.enum(['typescript', 'python', 'go', 'rust']);
+export const LanguageSchema = z.enum([
+  'typescript',
+  'python',
+  'go',
+  'rust',
+  'java',
+  'kotlin',
+  'csharp',
+  'elixir',
+]);
 export type Language = z.infer<typeof LanguageSchema>;
+
+export const JavaBuildToolSchema = z.enum(['maven', 'gradle']);
+export type JavaBuildTool = z.infer<typeof JavaBuildToolSchema>;
 
 export const TransportSchema = z.enum(['stdio', 'sse']);
 export type Transport = z.infer<typeof TransportSchema>;
@@ -39,6 +51,7 @@ export const ProjectConfigSchema = z.object({
   includeExampleTool: z.boolean().default(true),
   skipInstall: z.boolean().default(false),
   initGit: z.boolean().default(true),
+  javaBuildTool: JavaBuildToolSchema.optional(),
 });
 export type ProjectConfig = z.infer<typeof ProjectConfigSchema>;
 
@@ -56,6 +69,12 @@ export interface CLIOptions {
   python?: boolean;
   go?: boolean;
   rust?: boolean;
+  java?: boolean;
+  kotlin?: boolean;
+  csharp?: boolean;
+  elixir?: boolean;
+  maven?: boolean;
+  gradle?: boolean;
   skipInstall?: boolean;
   fromOpenapi?: string;
   fromPrompt?: boolean;

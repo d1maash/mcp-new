@@ -1,0 +1,17 @@
+defmodule <%= namespace %>.CLI do
+  @moduledoc """
+  CLI entry point for <%= name %> MCP Server
+  """
+
+  require Logger
+
+  def main(_args) do
+    Logger.info("<%= name %> MCP server running on stdio")
+    
+    # Start the application
+    Application.ensure_all_started(:<%= packageName %>)
+    
+    # Keep the process alive
+    Process.sleep(:infinity)
+  end
+end

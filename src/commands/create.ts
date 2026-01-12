@@ -1,5 +1,5 @@
 import path from 'path';
-import type { CLIOptions, ProjectConfig } from '../types/config.js';
+import type { CLIOptions, ProjectConfig, Language, JavaBuildTool } from '../types/config.js';
 import { runWizard, runQuickWizard } from '../prompts/index.js';
 import { generateFromWizard } from '../generators/from-wizard.js';
 import { generateFromOpenAPI } from '../generators/from-openapi.js';
@@ -7,6 +7,26 @@ import { generateFromPrompt } from '../generators/from-prompt.js';
 import { generateFromPreset, validatePresetId } from '../generators/from-preset.js';
 import { logger } from '../utils/logger.js';
 import { exists } from '../utils/file-system.js';
+
+// Helper function to get language from CLI options
+function getLanguageFromOptions(options: CLIOptions): Language | undefined {
+  if (options.typescript) return 'typescript';
+  if (options.python) return 'python';
+  if (options.go) return 'go';
+  if (options.rust) return 'rust';
+  if (options.java) return 'java';
+  if (options.kotlin) return 'kotlin';
+  if (options.csharp) return 'csharp';
+  if (options.elixir) return 'elixir';
+  return undefined;
+}
+
+// Helper function to get Java build tool from CLI options
+function getJavaBuildToolFromOptions(options: CLIOptions): JavaBuildTool | undefined {
+  if (options.maven) return 'maven';
+  if (options.gradle) return 'gradle';
+  return undefined;
+}
 
 export async function createCommand(
   projectName: string | undefined,
@@ -50,22 +70,17 @@ async function handleWizardGeneration(
   let config: ProjectConfig;
 
   // Determine preset language from CLI flags
-  const presetLanguage = options.typescript
-    ? 'typescript'
-    : options.python
-      ? 'python'
-      : options.go
-        ? 'go'
-        : options.rust
-          ? 'rust'
-          : undefined;
+  const presetLanguage = getLanguageFromOptions(options);
+
+  // Determine Java build tool from CLI flags
+  const presetJavaBuildTool = getJavaBuildToolFromOptions(options);
 
   if (options.yes) {
     // Quick mode - use defaults with minimal prompts
-    config = await runQuickWizard(projectName, presetLanguage);
+    config = await runQuickWizard(projectName, presetLanguage, presetJavaBuildTool);
   } else {
     // Full wizard mode
-    config = await runWizard({ defaultName: projectName, presetLanguage });
+    config = await runWizard({ defaultName: projectName, presetLanguage, presetJavaBuildTool });
   }
 
   if (options.skipInstall) {
@@ -102,16 +117,9 @@ async function handleOpenAPIGeneration(
 
   await generateFromOpenAPI(specPath, {
     name,
-    language: options.typescript
-      ? 'typescript'
-      : options.python
-        ? 'python'
-        : options.go
-          ? 'go'
-          : options.rust
-            ? 'rust'
-            : undefined,
+    language: getLanguageFromOptions(options),
     skipInstall: options.skipInstall,
+    javaBuildTool: getJavaBuildToolFromOptions(options),
   });
 }
 
@@ -121,16 +129,9 @@ async function handlePromptGeneration(
 ): Promise<void> {
   await generateFromPrompt({
     name: projectName,
-    language: options.typescript
-      ? 'typescript'
-      : options.python
-        ? 'python'
-        : options.go
-          ? 'go'
-          : options.rust
-            ? 'rust'
-            : undefined,
+    language: getLanguageFromOptions(options),
     skipInstall: options.skipInstall,
+    javaBuildTool: getJavaBuildToolFromOptions(options),
   });
 }
 
@@ -146,16 +147,9 @@ async function handlePresetGeneration(
   await generateFromPreset({
     projectName,
     presetId: presetId as 'database' | 'rest-api' | 'filesystem',
-    language: options.typescript
-      ? 'typescript'
-      : options.python
-        ? 'python'
-        : options.go
-          ? 'go'
-          : options.rust
-            ? 'rust'
-            : undefined,
+    language: getLanguageFromOptions(options),
     skipInstall: options.skipInstall,
     useDefaults: options.yes,
+    javaBuildTool: getJavaBuildToolFromOptions(options),
   });
 }

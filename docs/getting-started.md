@@ -15,6 +15,10 @@ For specific languages, you'll also need:
 | Python | Python 3.10+, pip |
 | Go | Go 1.21+ |
 | Rust | Rust 1.70+, Cargo |
+| Java | JDK 17+, Maven or Gradle |
+| Kotlin | JDK 17+, Maven or Gradle |
+| C# | .NET 8.0+ |
+| Elixir | Elixir 1.14+, Mix |
 
 ## Installation
 
@@ -83,6 +87,18 @@ mcp-new my-server -g -y
 
 # Rust with defaults
 mcp-new my-server -r -y
+
+# Java with Gradle
+mcp-new my-server -j --gradle -y
+
+# Kotlin with Maven
+mcp-new my-server -k --maven -y
+
+# C# (.NET)
+mcp-new my-server -c -y
+
+# Elixir
+mcp-new my-server -e -y
 ```
 
 ### Using Presets
@@ -99,6 +115,25 @@ mcp-new my-api --preset rest-api -t -y
 # File system tools
 mcp-new my-fs --preset filesystem -t -y
 ```
+
+### Using Monorepo
+
+Manage multiple MCP servers in one workspace:
+
+```bash
+# Create workspace
+mcp-new monorepo init my-workspace
+cd my-workspace
+
+# Add servers
+mcp-new monorepo add api-server -t
+mcp-new monorepo add data-processor -p
+
+# List servers
+mcp-new monorepo list
+```
+
+See [Monorepo Documentation](./monorepo.md) for details.
 
 ## Project Structure
 
@@ -235,6 +270,7 @@ Edit `%APPDATA%\Claude\claude_desktop_config.json`:
 ## Next Steps
 
 - 📦 Learn about [Presets](./presets.md) for quick starts
+- 🗂️ Set up a [Monorepo](./monorepo.md) for multiple servers
 - 📖 Read the [CLI Reference](./cli-reference.md) for all options
 - 🔧 Explore [Templates](./templates.md) for language-specific details
 - 📄 Try [OpenAPI Integration](./openapi.md) to import existing APIs

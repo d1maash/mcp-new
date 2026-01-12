@@ -1,0 +1,46 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group = 'com.example'
+version = '1.0.0'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // MCP SDK
+    implementation 'io.modelcontextprotocol:sdk:0.8.0'
+
+    // Logging
+    implementation 'org.slf4j:slf4j-api:2.0.9'
+    implementation 'ch.qos.logback:logback-classic:1.4.14'
+
+    // JSON processing
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.16.1'
+}
+
+application {
+    mainClass = 'com.example.mcp.McpServer'
+}
+
+shadowJar {
+    archiveBaseName.set('<%= name %>')
+    archiveClassifier.set('')
+    archiveVersion.set('1.0.0')
+    manifest {
+        attributes 'Main-Class': 'com.example.mcp.McpServer'
+    }
+}
+
+tasks.named('build') {
+    dependsOn shadowJar
+}
