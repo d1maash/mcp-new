@@ -50,6 +50,10 @@ export abstract class BaseGenerator {
   }
 
   protected getTemplateData(): Record<string, unknown> {
+    const cleanName = this.config.name.replace(/[^a-zA-Z0-9]/g, '');
+    // Capitalize first letter for proper module/namespace naming
+    const capitalizedName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+
     return {
       name: this.config.name,
       description: this.config.description,
@@ -58,6 +62,11 @@ export abstract class BaseGenerator {
       tools: this.config.tools,
       resources: this.config.resources,
       includeExampleTool: this.config.includeExampleTool,
+      javaBuildTool: this.config.javaBuildTool,
+      // Helper for Java/Elixir package name (lowercase, no special chars)
+      packageName: this.config.name.toLowerCase().replace(/[^a-z0-9]/g, ''),
+      // Helper for C#/Elixir namespace (PascalCase)
+      namespace: capitalizedName,
     };
   }
 
@@ -79,6 +88,16 @@ export abstract class BaseGenerator {
         break;
       case 'rust':
         await this.installRustDependencies();
+        break;
+      case 'java':
+      case 'kotlin':
+        await this.installJavaDependencies();
+        break;
+      case 'csharp':
+        await this.installDotnetDependencies();
+        break;
+      case 'elixir':
+        await this.installElixirDependencies();
         break;
     }
   }
@@ -163,6 +182,101 @@ export abstract class BaseGenerator {
     );
   }
 
+  private async installJavaDependencies(): Promise<void> {
+    const buildTool = this.config.javaBuildTool || 'maven';
+
+    if (buildTool === 'maven') {
+      const hasMvn = await this.checkCommand('mvn');
+
+      if (!hasMvn) {
+        logger.warning('Maven not found. Please install dependencies manually:');
+        logger.code('mvn install');
+        return;
+      }
+
+      await withSpinner(
+        'Installing Maven dependencies...',
+        async () => {
+          await execa('mvn', ['install', '-DskipTests'], {
+            cwd: this.outputDir,
+          });
+        },
+        'Dependencies installed',
+        'Failed to install dependencies'
+      );
+    } else {
+      const hasGradle = await this.checkCommand('gradle');
+      const hasGradlew = await exists(path.join(this.outputDir, 'gradlew'));
+
+      if (!hasGradle && !hasGradlew) {
+        logger.warning('Gradle not found. Please install dependencies manually:');
+        logger.code('gradle build');
+        return;
+      }
+
+      const gradleCmd = hasGradlew ? './gradlew' : 'gradle';
+
+      await withSpinner(
+        'Installing Gradle dependencies...',
+        async () => {
+          await execa(gradleCmd, ['build', '-x', 'test'], {
+            cwd: this.outputDir,
+          });
+        },
+        'Dependencies installed',
+        'Failed to install dependencies'
+      );
+    }
+  }
+
+  private async installDotnetDependencies(): Promise<void> {
+    const hasDotnet = await this.checkCommand('dotnet');
+
+    if (!hasDotnet) {
+      logger.warning('.NET SDK not found. Please install dependencies manually:');
+      logger.code('dotnet restore');
+      return;
+    }
+
+    await withSpinner(
+      'Restoring .NET dependencies...',
+      async () => {
+        await execa('dotnet', ['restore'], {
+          cwd: this.outputDir,
+        });
+        await execa('dotnet', ['build'], {
+          cwd: this.outputDir,
+        });
+      },
+      'Dependencies installed',
+      'Failed to install dependencies'
+    );
+  }
+
+  private async installElixirDependencies(): Promise<void> {
+    const hasMix = await this.checkCommand('mix');
+
+    if (!hasMix) {
+      logger.warning('Elixir/Mix not found. Please install dependencies manually:');
+      logger.code('mix deps.get');
+      return;
+    }
+
+    await withSpinner(
+      'Installing Elixir dependencies...',
+      async () => {
+        await execa('mix', ['deps.get'], {
+          cwd: this.outputDir,
+        });
+        await execa('mix', ['compile'], {
+          cwd: this.outputDir,
+        });
+      },
+      'Dependencies installed',
+      'Failed to install dependencies'
+    );
+  }
+
   private async checkCommand(command: string): Promise<boolean> {
     try {
       // Use 'where' on Windows, 'which' on Unix
@@ -212,7 +326,14 @@ export function createGeneratorContext(
   outputPath?: string
 ): GeneratorContext {
   const outputDir = outputPath || path.resolve(process.cwd(), config.name);
-  const templateDir = path.join(getTemplateDir(), config.language);
+
+  // For Java/Kotlin, include the build tool in the template path
+  let templateDir: string;
+  if ((config.language === 'java' || config.language === 'kotlin') && config.javaBuildTool) {
+    templateDir = path.join(getTemplateDir(), config.language, config.javaBuildTool);
+  } else {
+    templateDir = path.join(getTemplateDir(), config.language);
+  }
 
   return {
     config,

@@ -8,6 +8,7 @@ Welcome to the mcp-new documentation! This guide will help you create MCP server
 |----------|-------------|
 | [Getting Started](./getting-started.md) | Installation and first steps |
 | [CLI Reference](./cli-reference.md) | Complete command-line reference |
+| [Monorepo](./monorepo.md) | Manage multiple MCP servers |
 | [Presets](./presets.md) | Pre-configured project templates |
 | [Templates](./templates.md) | Language-specific templates guide |
 | [OpenAPI Integration](./openapi.md) | Generate from OpenAPI specs |
@@ -17,6 +18,7 @@ Welcome to the mcp-new documentation! This guide will help you create MCP server
 ## 🚀 Quick Links
 
 - **New to MCP?** Start with [Getting Started](./getting-started.md)
+- **Multiple servers?** Check out [Monorepo](./monorepo.md)
 - **Want pre-built tools?** Check out [Presets](./presets.md)
 - **Have an OpenAPI spec?** See [OpenAPI Integration](./openapi.md)
 - **Need CLI help?** View [CLI Reference](./cli-reference.md)
@@ -29,6 +31,9 @@ Welcome to the mcp-new documentation! This guide will help you create MCP server
 | `mcp-new validate` | Validate current MCP server project |
 | `mcp-new upgrade` | Upgrade MCP SDK to latest version |
 | `mcp-new upgrade --check` | Check for SDK updates without installing |
+| `mcp-new monorepo init` | Create a new monorepo workspace |
+| `mcp-new monorepo add` | Add a server to the workspace |
+| `mcp-new monorepo list` | List all servers in the workspace |
 
 ## 💡 What is MCP?
 
@@ -40,6 +45,10 @@ Welcome to the mcp-new documentation! This guide will help you create MCP server
 - 🐍 Python
 - 🐹 Go
 - 🦀 Rust
+- ☕ Java
+- 🎯 Kotlin
+- 🔷 C# (.NET)
+- 💧 Elixir
 
 ## 🆘 Getting Help
 

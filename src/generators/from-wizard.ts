@@ -45,7 +45,7 @@ export class WizardGenerator extends BaseGenerator {
 
     // Show success message
     logger.success(`Project ${this.config.name} created successfully!`);
-    logger.nextSteps(this.config.name, this.config.language);
+    logger.nextSteps(this.config.name, this.config.language, this.config.javaBuildTool);
   }
 }
 

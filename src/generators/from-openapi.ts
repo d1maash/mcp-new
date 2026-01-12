@@ -23,9 +23,7 @@ export class OpenAPIGenerator extends BaseGenerator {
     // Check if output directory is safe to use
     const isSafe = await this.checkOutputDir();
     if (!isSafe) {
-      throw new Error(
-        `Directory ${this.outputDir} already exists and is not empty.`
-      );
+      throw new Error(`Directory ${this.outputDir} already exists and is not empty.`);
     }
 
     // Create project structure
@@ -55,7 +53,7 @@ export class OpenAPIGenerator extends BaseGenerator {
     // Show success message
     logger.success(`Project ${this.config.name} created successfully!`);
     logger.info(`Generated ${this.config.tools.length} tools from OpenAPI spec`);
-    logger.nextSteps(this.config.name, this.config.language);
+    logger.nextSteps(this.config.name, this.config.language, this.config.javaBuildTool);
   }
 
   setEndpoints(endpoints: ParsedEndpoint[]): void {
@@ -84,7 +82,10 @@ export async function generateFromOpenAPI(
   // Convert endpoints to tools
   const tools: ToolConfig[] = selectedEndpoints.map((endpoint) => ({
     name: endpointToToolName(endpoint),
-    description: endpoint.summary || endpoint.description || `${endpoint.method.toUpperCase()} ${endpoint.path}`,
+    description:
+      endpoint.summary ||
+      endpoint.description ||
+      `${endpoint.method.toUpperCase()} ${endpoint.path}`,
     parameters: endpoint.parameters.map((param) => ({
       name: param.name,
       type: mapOpenAPIType(param.type),
@@ -104,6 +105,7 @@ export async function generateFromOpenAPI(
     includeExampleTool: false,
     skipInstall: baseConfig.skipInstall || false,
     initGit: baseConfig.initGit !== false,
+    javaBuildTool: baseConfig.javaBuildTool,
   };
 
   const context = createGeneratorContext(config);

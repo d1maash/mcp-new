@@ -40,8 +40,9 @@ mcp-new my-server
 | Feature | Description |
 |---------|-------------|
 | 🧙 **Interactive Wizard** | Step-by-step prompts to configure your MCP server |
-| 🌍 **Multi-Language** | TypeScript, Python, Go, and Rust support |
+| 🌍 **Multi-Language** | TypeScript, Python, Go, Rust, Java, Kotlin, C#, Elixir |
 | 📦 **Preset Templates** | Ready-to-use templates for common use cases |
+| 🗂️ **Monorepo Support** | Manage multiple MCP servers in one workspace |
 | 📄 **OpenAPI Import** | Auto-generate tools from OpenAPI/Swagger specs |
 | 🤖 **AI Generation** | Create tools from natural language using Claude |
 | 📚 **Rich Documentation** | Generated README with examples and Claude Desktop config |
@@ -94,6 +95,10 @@ mcp-new my-server -t          # TypeScript
 mcp-new my-server -p          # Python
 mcp-new my-server -g          # Go
 mcp-new my-server -r          # Rust
+mcp-new my-server -j          # Java
+mcp-new my-server -k          # Kotlin
+mcp-new my-server -c          # C#
+mcp-new my-server -e          # Elixir
 
 # Skip prompts with defaults
 mcp-new my-server -t -y
@@ -115,6 +120,23 @@ mcp-new my-server --from-prompt
 ```
 
 Describe your API in natural language, Claude generates the tools.
+
+### Monorepo Workspaces
+
+Manage multiple MCP servers in one repository:
+
+```bash
+# Create a workspace
+mcp-new monorepo init my-workspace
+cd my-workspace
+
+# Add servers
+mcp-new monorepo add api-server -t
+mcp-new monorepo add data-service -p
+
+# List all servers
+mcp-new monorepo list
+```
 
 ### Additional Commands
 
@@ -152,6 +174,12 @@ Options:
   -p, --python           Use Python
   -g, --go               Use Go
   -r, --rust             Use Rust
+  -j, --java             Use Java
+  -k, --kotlin           Use Kotlin
+  -c, --csharp           Use C# (.NET)
+  -e, --elixir           Use Elixir
+  --maven                Use Maven (Java/Kotlin)
+  --gradle               Use Gradle (Java/Kotlin)
   --preset <name>        Use preset (database, rest-api, filesystem)
   --from-openapi <path>  Generate from OpenAPI spec
   --from-prompt          Generate using AI
@@ -166,6 +194,9 @@ Commands:
   list-presets           List all available preset templates
   validate               Validate current MCP server project
   upgrade                Upgrade MCP SDK to latest version
+  monorepo init          Create a monorepo workspace
+  monorepo add           Add server to workspace
+  monorepo list          List servers in workspace
 ```
 
 ### Generated Project Structure
@@ -279,6 +310,7 @@ For detailed documentation, see the [docs](./docs) folder:
 |----------|-------------|
 | [Getting Started](./docs/getting-started.md) | Installation and first steps |
 | [CLI Reference](./docs/cli-reference.md) | Complete command reference |
+| [Monorepo](./docs/monorepo.md) | Manage multiple MCP servers |
 | [Presets](./docs/presets.md) | Pre-configured templates |
 | [Templates](./docs/templates.md) | Language-specific guides |
 | [OpenAPI Integration](./docs/openapi.md) | Generate from specs |

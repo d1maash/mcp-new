@@ -8,6 +8,11 @@ import { addToolCommand } from './commands/add-tool.js';
 import { listPresetsCommand } from './commands/list-presets.js';
 import { validateCommand } from './commands/validate.js';
 import { upgradeCommand } from './commands/upgrade.js';
+import {
+  monorepoInitCommand,
+  monorepoAddCommand,
+  monorepoListCommand,
+} from './commands/monorepo.js';
 
 const program = new Command();
 
@@ -55,6 +60,10 @@ ${chalk.bold('Supported Languages:')}
   ${chalk.green('-p, --python')}       Python with pip
   ${chalk.green('-g, --go')}           Go with go modules
   ${chalk.green('-r, --rust')}         Rust with cargo
+  ${chalk.green('-j, --java')}         Java with Maven/Gradle
+  ${chalk.green('-k, --kotlin')}       Kotlin with Maven/Gradle
+  ${chalk.green('-c, --csharp')}       C# with .NET
+  ${chalk.green('-e, --elixir')}       Elixir with Mix
 
 ${chalk.bold('Learn More:')}
 
@@ -65,7 +74,7 @@ ${chalk.bold('Learn More:')}
 program
   .name('mcp-new')
   .description('CLI tool for generating MCP (Model Context Protocol) servers')
-  .version('1.2.2')
+  .version('1.5.0')
   .addHelpText('beforeAll', logo)
   .addHelpText('after', examples);
 
@@ -76,6 +85,12 @@ program
   .option('-p, --python', 'Use Python template')
   .option('-g, --go', 'Use Go template')
   .option('-r, --rust', 'Use Rust template')
+  .option('-j, --java', 'Use Java template')
+  .option('-k, --kotlin', 'Use Kotlin template')
+  .option('-c, --csharp', 'Use C# (.NET) template')
+  .option('-e, --elixir', 'Use Elixir template')
+  .option('--maven', 'Use Maven build tool (for Java/Kotlin)')
+  .option('--gradle', 'Use Gradle build tool (for Java/Kotlin)')
   .option('--skip-install', 'Skip dependency installation')
   .option('--from-openapi <path>', 'Generate from OpenAPI/Swagger specification')
   .option('--from-prompt', 'Generate tools using AI from text description')
@@ -91,9 +106,17 @@ program
   .option('-p, --python', 'Use Python template')
   .option('-g, --go', 'Use Go template')
   .option('-r, --rust', 'Use Rust template')
+  .option('-j, --java', 'Use Java template')
+  .option('-k, --kotlin', 'Use Kotlin template')
+  .option('-c, --csharp', 'Use C# (.NET) template')
+  .option('-e, --elixir', 'Use Elixir template')
+  .option('--maven', 'Use Maven build tool (for Java/Kotlin)')
+  .option('--gradle', 'Use Gradle build tool (for Java/Kotlin)')
   .option('--skip-install', 'Skip dependency installation')
   .option('-f, --force', 'Initialize even if directory contains files')
-  .addHelpText('after', `
+  .addHelpText(
+    'after',
+    `
 ${chalk.bold('Examples:')}
 
   ${chalk.gray('# Initialize in current directory')}
@@ -104,7 +127,8 @@ ${chalk.bold('Examples:')}
 
   ${chalk.gray('# Force initialize (overwrite existing files)')}
   ${chalk.cyan('$')} mcp-new init -f
-`)
+`
+  )
   .action(initCommand);
 
 // Add tool command
@@ -112,7 +136,9 @@ program
   .command('add-tool')
   .description('Add a new tool to an existing MCP server')
   .option('-n, --name <name>', 'Tool name (snake_case)')
-  .addHelpText('after', `
+  .addHelpText(
+    'after',
+    `
 ${chalk.bold('Examples:')}
 
   ${chalk.gray('# Add tool interactively')}
@@ -120,26 +146,32 @@ ${chalk.bold('Examples:')}
 
   ${chalk.gray('# Add tool with name')}
   ${chalk.cyan('$')} mcp-new add-tool -n my_new_tool
-`)
+`
+  )
   .action(addToolCommand);
 
 // List presets command
 program
   .command('list-presets')
   .description('List all available preset templates')
-  .addHelpText('after', `
+  .addHelpText(
+    'after',
+    `
 ${chalk.bold('Examples:')}
 
   ${chalk.gray('# Show all presets with their tools')}
   ${chalk.cyan('$')} mcp-new list-presets
-`)
+`
+  )
   .action(listPresetsCommand);
 
 // Validate command
 program
   .command('validate')
   .description('Validate the current MCP server project')
-  .addHelpText('after', `
+  .addHelpText(
+    'after',
+    `
 ${chalk.bold('Examples:')}
 
   ${chalk.gray('# Validate current project')}
@@ -150,7 +182,8 @@ ${chalk.bold('Checks:')}
   • MCP SDK dependency presence and version
   • Entry point file existence
   • Basic project structure
-`)
+`
+  )
   .action(validateCommand);
 
 // Upgrade command
@@ -158,7 +191,9 @@ program
   .command('upgrade')
   .description('Upgrade MCP SDK to the latest version')
   .option('-c, --check', 'Check for updates without installing')
-  .addHelpText('after', `
+  .addHelpText(
+    'after',
+    `
 ${chalk.bold('Examples:')}
 
   ${chalk.gray('# Upgrade MCP SDK to latest version')}
@@ -172,8 +207,72 @@ ${chalk.bold('Supported languages:')}
   • Python (pip)
   • Go (go modules)
   • Rust (cargo)
-`)
+`
+  )
   .action(upgradeCommand);
+
+// Monorepo command group
+const monorepo = program.command('monorepo').description('Manage MCP monorepo workspaces');
+
+monorepo
+  .command('init [workspace-name]')
+  .description('Initialize a new MCP monorepo workspace')
+  .option('-f, --force', 'Initialize even if directory contains files')
+  .addHelpText(
+    'after',
+    `
+${chalk.bold('Examples:')}
+
+  ${chalk.gray('# Create a new monorepo workspace')}
+  ${chalk.cyan('$')} mcp-new monorepo init my-workspace
+
+  ${chalk.gray('# Create in current directory name')}
+  ${chalk.cyan('$')} mcp-new monorepo init
+`
+  )
+  .action((_workspaceName, _options, command) => {
+    const opts = command.optsWithGlobals();
+    const workspaceName = command.args[0];
+    monorepoInitCommand(workspaceName, opts);
+  });
+
+monorepo
+  .command('add [server-name]')
+  .description('Add a new MCP server to the workspace')
+  .option('-n, --name <name>', 'Server name')
+  .option('-t, --typescript', 'Use TypeScript template')
+  .option('-p, --python', 'Use Python template')
+  .option('-g, --go', 'Use Go template')
+  .option('-r, --rust', 'Use Rust template')
+  .option('-j, --java', 'Use Java template')
+  .option('-k, --kotlin', 'Use Kotlin template')
+  .option('-c, --csharp', 'Use C# (.NET) template')
+  .option('-e, --elixir', 'Use Elixir template')
+  .option('--maven', 'Use Maven build tool (for Java/Kotlin)')
+  .option('--gradle', 'Use Gradle build tool (for Java/Kotlin)')
+  .option('--skip-install', 'Skip dependency installation')
+  .addHelpText(
+    'after',
+    `
+${chalk.bold('Examples:')}
+
+  ${chalk.gray('# Add a TypeScript server')}
+  ${chalk.cyan('$')} mcp-new monorepo add my-server -t
+
+  ${chalk.gray('# Add a Java server with Gradle')}
+  ${chalk.cyan('$')} mcp-new monorepo add api-server -j --gradle
+`
+  )
+  .action((_serverName, _options, command) => {
+    const opts = command.optsWithGlobals();
+    const serverName = command.args[0];
+    monorepoAddCommand(serverName, opts);
+  });
+
+monorepo
+  .command('list')
+  .description('List all packages in the workspace')
+  .action(monorepoListCommand);
 
 // Parse arguments
 program.parse();

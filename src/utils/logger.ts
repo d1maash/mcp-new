@@ -50,7 +50,7 @@ export const logger = {
     console.log(chalk.green('└─'));
   },
 
-  nextSteps: (projectName: string, language: string) => {
+  nextSteps: (projectName: string, language: string, javaBuildTool?: string) => {
     logger.blank();
 
     let installCmd: string;
@@ -72,6 +72,24 @@ export const logger = {
       case 'rust':
         installCmd = 'cargo build';
         runCmd = 'cargo run';
+        break;
+      case 'java':
+      case 'kotlin':
+        if (javaBuildTool === 'gradle') {
+          installCmd = './gradlew build';
+          runCmd = './gradlew run';
+        } else {
+          installCmd = 'mvn install';
+          runCmd = 'mvn exec:java -Dexec.mainClass="com.example.mcp.McpServer"';
+        }
+        break;
+      case 'csharp':
+        installCmd = 'dotnet restore';
+        runCmd = 'dotnet run';
+        break;
+      case 'elixir':
+        installCmd = 'mix deps.get';
+        runCmd = 'mix run --no-halt';
         break;
       default:
         installCmd = 'npm install';

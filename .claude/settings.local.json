@@ -16,7 +16,9 @@
       "Bash(node:*)",
       "Bash(npm link)",
       "Bash(npm link:*)",
-      "Bash(mcp-new:*)"
+      "Bash(mcp-new:*)",
+      "Bash(git -C /Users/dimashi/Desktop/coding/mcp-generator log --oneline -20)",
+      "Bash(git -C /Users/dimashi/Desktop/coding/mcp-generator show --stat HEAD)"
     ]
   }
 }

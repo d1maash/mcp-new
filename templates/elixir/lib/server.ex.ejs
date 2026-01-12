@@ -1,0 +1,112 @@
+defmodule <%= namespace %>.Server do
+  @moduledoc """
+  MCP Server implementation for <%= name %>
+  """
+
+  use GenServer
+  require Logger
+
+  def start_link(opts \\ []) do
+    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
+  end
+
+  @impl true
+  def init(_opts) do
+    Logger.info("<%= name %> MCP server starting...")
+    
+    # Register tools
+    tools = register_tools()
+    
+    {:ok, %{tools: tools}}
+  end
+
+  defp register_tools do
+    [
+<% if (includeExampleTool) { %>
+      %{
+        name: "example_tool",
+        description: "An example tool that echoes the input",
+        input_schema: %{
+          type: "object",
+          properties: %{
+            query: %{
+              type: "string",
+              description: "The query to echo"
+            }
+          },
+          required: ["query"]
+        },
+        handler: &handle_example_tool/1
+      },
+<% } %>
+<% tools.forEach(function(tool) { %>
+      %{
+        name: "<%= tool.name %>",
+        description: "<%= tool.description %>",
+        input_schema: %{
+          type: "object",
+          properties: %{
+<% tool.parameters.forEach(function(param, index) { %>
+            <%= param.name %>: %{
+              type: "<%= param.type %>",
+              description: "<%= param.description %>"
+            }<%= index < tool.parameters.length - 1 ? ',' : '' %>
+<% }); %>
+          },
+          required: [<%= tool.parameters.filter(p => p.required).map(p => '"' + p.name + '"').join(', ') %>]
+        },
+        handler: &handle_<%= tool.name %>/1
+      },
+<% }); %>
+    ]
+  end
+
+<% if (includeExampleTool) { %>
+  defp handle_example_tool(%{"query" => query}) do
+    {:ok, %{
+      content: [
+        %{type: "text", text: "Echo: #{query}"}
+      ]
+    }}
+  end
+<% } %>
+
+<% tools.forEach(function(tool) { %>
+  defp handle_<%= tool.name %>(args) do
+    # TODO: Implement <%= tool.name %> logic
+<% tool.parameters.forEach(function(param) { %>
+    _<%= param.name %> = Map.get(args, "<%= param.name %>")
+<% }); %>
+
+    {:ok, %{
+      content: [
+        %{type: "text", text: "<%= tool.name %> called with: #{inspect(args)}"}
+      ]
+    }}
+  end
+<% }); %>
+
+  # Handle incoming MCP messages
+  @impl true
+  def handle_info({:mcp, :list_tools}, state) do
+    tools = Enum.map(state.tools, fn tool ->
+      %{
+        name: tool.name,
+        description: tool.description,
+        inputSchema: tool.input_schema
+      }
+    end)
+    
+    {:noreply, state, {:reply, %{tools: tools}}}
+  end
+
+  @impl true
+  def handle_info({:mcp, :call_tool, name, arguments}, state) do
+    result = case Enum.find(state.tools, fn t -> t.name == name end) do
+      nil -> {:error, "Unknown tool: #{name}"}
+      tool -> tool.handler.(arguments)
+    end
+    
+    {:noreply, state, {:reply, result}}
+  end
+end

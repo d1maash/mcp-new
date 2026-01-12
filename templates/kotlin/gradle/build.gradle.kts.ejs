@@ -1,0 +1,48 @@
+plugins {
+    kotlin("jvm") version "1.9.22"
+    application
+    id("com.github.johnrengelman.shadow") version "8.1.1"
+}
+
+group = "com.example"
+version = "1.0.0"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // MCP SDK
+    implementation("io.modelcontextprotocol:sdk:0.8.0")
+
+    // Kotlin coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+
+    // Logging
+    implementation("org.slf4j:slf4j-api:2.0.9")
+    implementation("ch.qos.logback:logback-classic:1.4.14")
+
+    // JSON processing
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.16.1")
+}
+
+kotlin {
+    jvmToolchain(17)
+}
+
+application {
+    mainClass.set("com.example.mcp.McpServerKt")
+}
+
+tasks.shadowJar {
+    archiveBaseName.set("<%= name %>")
+    archiveClassifier.set("")
+    archiveVersion.set("1.0.0")
+    manifest {
+        attributes["Main-Class"] = "com.example.mcp.McpServerKt"
+    }
+}
+
+tasks.build {
+    dependsOn(tasks.shadowJar)
+}

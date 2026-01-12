@@ -39,9 +39,7 @@ export class PromptGenerator extends BaseGenerator {
 
     const isSafe = await this.checkOutputDir();
     if (!isSafe) {
-      throw new Error(
-        `Directory ${this.outputDir} already exists and is not empty.`
-      );
+      throw new Error(`Directory ${this.outputDir} already exists and is not empty.`);
     }
 
     await withSpinner(
@@ -65,13 +63,11 @@ export class PromptGenerator extends BaseGenerator {
 
     logger.success(`Project ${this.config.name} created successfully!`);
     logger.info(`Generated ${this.config.tools.length} tools from your description`);
-    logger.nextSteps(this.config.name, this.config.language);
+    logger.nextSteps(this.config.name, this.config.language, this.config.javaBuildTool);
   }
 }
 
-export async function generateFromPrompt(
-  baseConfig: Partial<ProjectConfig>
-): Promise<void> {
+export async function generateFromPrompt(baseConfig: Partial<ProjectConfig>): Promise<void> {
   // Get API description from user
   const { description } = await inquirer.prompt<{ description: string }>([
     {
@@ -90,7 +86,7 @@ export async function generateFromPrompt(
   if (!apiKey) {
     throw new Error(
       'ANTHROPIC_API_KEY environment variable is required for AI generation. ' +
-      'Get your API key at https://console.anthropic.com/'
+        'Get your API key at https://console.anthropic.com/'
     );
   }
 
@@ -168,6 +164,7 @@ export async function generateFromPrompt(
     includeExampleTool: false,
     skipInstall: baseConfig.skipInstall || false,
     initGit: baseConfig.initGit !== false,
+    javaBuildTool: baseConfig.javaBuildTool,
   };
 
   const context = createGeneratorContext(config);
