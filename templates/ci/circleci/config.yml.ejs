@@ -1,0 +1,219 @@
+version: 2.1
+
+<% if (language === 'typescript') { %>
+orbs:
+  node: circleci/node@5
+
+jobs:
+  build-and-test:
+    docker:
+      - image: cimg/node:<%= nodeVersion %>.0
+    steps:
+      - checkout
+      - node/install-packages:
+          pkg-manager: npm
+<% if (buildCommand) { %>
+      - run:
+          name: Build
+          command: <%= buildCommand %>
+<% } %>
+<% if (testCommand) { %>
+      - run:
+          name: Test
+          command: <%= testCommand %>
+<% } %>
+
+workflows:
+  build-and-test:
+    jobs:
+      - build-and-test
+<% } else if (language === 'python') { %>
+orbs:
+  python: circleci/python@2
+
+jobs:
+  build-and-test:
+    docker:
+      - image: cimg/python:<%= pythonVersion %>
+    steps:
+      - checkout
+      - python/install-packages:
+          pkg-manager: pip
+          pip-dependency-file: requirements.txt
+<% if (testCommand) { %>
+      - run:
+          name: Test
+          command: |
+            pip install pytest
+            <%= testCommand %>
+<% } %>
+
+workflows:
+  build-and-test:
+    jobs:
+      - build-and-test
+<% } else if (language === 'go') { %>
+orbs:
+  go: circleci/go@1
+
+jobs:
+  build-and-test:
+    docker:
+      - image: cimg/go:<%= goVersion %>
+    steps:
+      - checkout
+      - go/load-cache
+      - go/mod-download
+      - go/save-cache
+<% if (buildCommand) { %>
+      - run:
+          name: Build
+          command: <%= buildCommand %>
+<% } %>
+<% if (testCommand) { %>
+      - run:
+          name: Test
+          command: <%= testCommand %>
+<% } %>
+
+workflows:
+  build-and-test:
+    jobs:
+      - build-and-test
+<% } else if (language === 'rust') { %>
+orbs:
+  rust: circleci/rust@1
+
+jobs:
+  build-and-test:
+    docker:
+      - image: cimg/rust:<%= rustVersion %>
+    steps:
+      - checkout
+      - rust/clippy
+<% if (buildCommand) { %>
+      - run:
+          name: Build
+          command: <%= buildCommand %>
+<% } %>
+<% if (testCommand) { %>
+      - run:
+          name: Test
+          command: <%= testCommand %>
+<% } %>
+
+workflows:
+  build-and-test:
+    jobs:
+      - build-and-test
+<% } else if (language === 'java' || language === 'kotlin') { %>
+jobs:
+  build-and-test:
+    docker:
+      - image: cimg/openjdk:<%= javaVersion %>.0
+    steps:
+      - checkout
+<% if (installCommand.includes('gradle')) { %>
+      - restore_cache:
+          keys:
+            - gradle-{{ checksum "build.gradle" }}
+            - gradle-
+<% if (buildCommand) { %>
+      - run:
+          name: Build
+          command: <%= buildCommand %>
+<% } %>
+<% if (testCommand) { %>
+      - run:
+          name: Test
+          command: <%= testCommand %>
+<% } %>
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: gradle-{{ checksum "build.gradle" }}
+<% } else { %>
+      - restore_cache:
+          keys:
+            - maven-{{ checksum "pom.xml" }}
+            - maven-
+<% if (buildCommand) { %>
+      - run:
+          name: Build
+          command: <%= buildCommand %>
+<% } %>
+<% if (testCommand) { %>
+      - run:
+          name: Test
+          command: <%= testCommand %>
+<% } %>
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: maven-{{ checksum "pom.xml" }}
+<% } %>
+
+workflows:
+  build-and-test:
+    jobs:
+      - build-and-test
+<% } else if (language === 'csharp') { %>
+jobs:
+  build-and-test:
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:<%= dotnetVersion %>
+    steps:
+      - checkout
+      - run:
+          name: Restore dependencies
+          command: <%= installCommand %>
+<% if (buildCommand) { %>
+      - run:
+          name: Build
+          command: <%= buildCommand %>
+<% } %>
+<% if (testCommand) { %>
+      - run:
+          name: Test
+          command: <%= testCommand %>
+<% } %>
+
+workflows:
+  build-and-test:
+    jobs:
+      - build-and-test
+<% } else if (language === 'elixir') { %>
+jobs:
+  build-and-test:
+    docker:
+      - image: elixir:<%= elixirVersion %>
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - mix-{{ checksum "mix.lock" }}
+            - mix-
+      - run:
+          name: Install dependencies
+          command: <%= installCommand %>
+<% if (buildCommand) { %>
+      - run:
+          name: Build
+          command: <%= buildCommand %>
+<% } %>
+<% if (testCommand) { %>
+      - run:
+          name: Test
+          command: <%= testCommand %>
+<% } %>
+      - save_cache:
+          paths:
+            - deps
+            - _build
+          key: mix-{{ checksum "mix.lock" }}
+
+workflows:
+  build-and-test:
+    jobs:
+      - build-and-test
+<% } %>

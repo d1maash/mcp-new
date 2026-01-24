@@ -13,6 +13,10 @@ import {
   monorepoAddCommand,
   monorepoListCommand,
 } from './commands/monorepo.js';
+import { addCICommand } from './commands/add-ci.js';
+import { docsCommand } from './commands/docs.js';
+import { presetCacheCommand } from './commands/preset-cache.js';
+import { pluginRegistry } from './plugins/index.js';
 
 const program = new Command();
 
@@ -94,7 +98,8 @@ program
   .option('--skip-install', 'Skip dependency installation')
   .option('--from-openapi <path>', 'Generate from OpenAPI/Swagger specification')
   .option('--from-prompt', 'Generate tools using AI from text description')
-  .option('--preset <name>', 'Use a preset template (database, rest-api, filesystem)')
+  .option('--preset <name>', 'Use a preset template (database, rest-api, filesystem, or @org/package, github:user/repo)')
+  .option('--ci <provider>', 'Add CI/CD configuration (github, gitlab, circleci)')
   .option('-y, --yes', 'Skip prompts and use defaults')
   .action(createCommand);
 
@@ -211,6 +216,89 @@ ${chalk.bold('Supported languages:')}
   )
   .action(upgradeCommand);
 
+// Preset cache command
+program
+  .command('preset-cache [action]')
+  .description('Manage external preset cache')
+  .addHelpText(
+    'after',
+    `
+${chalk.bold('Actions:')}
+
+  ${chalk.green('list')}     List cached presets (default)
+  ${chalk.green('clear')}    Clear all cached presets
+  ${chalk.green('path')}     Show cache directory path
+
+${chalk.bold('Examples:')}
+
+  ${chalk.gray('# List cached presets')}
+  ${chalk.cyan('$')} mcp-new preset-cache list
+
+  ${chalk.gray('# Clear preset cache')}
+  ${chalk.cyan('$')} mcp-new preset-cache clear
+
+${chalk.bold('External Presets:')}
+
+  Use external presets with the --preset flag:
+  ${chalk.cyan('$')} mcp-new my-project --preset @company/custom-preset
+  ${chalk.cyan('$')} mcp-new my-project --preset github:user/repo
+`
+  )
+  .action(presetCacheCommand);
+
+// Docs command
+program
+  .command('docs')
+  .description('Start an interactive documentation server')
+  .option('-p, --port <port>', 'Port to run the server on', '3000')
+  .addHelpText(
+    'after',
+    `
+${chalk.bold('Examples:')}
+
+  ${chalk.gray('# Start docs server on default port (3000)')}
+  ${chalk.cyan('$')} mcp-new docs
+
+  ${chalk.gray('# Start docs server on custom port')}
+  ${chalk.cyan('$')} mcp-new docs --port 4000
+
+${chalk.bold('Features:')}
+  ${chalk.green('Hot reload')}    - Changes refresh automatically
+  ${chalk.green('Search')}        - Full-text search across all docs
+  ${chalk.green('Markdown')}      - Renders GitHub-flavored markdown
+`
+  )
+  .action(docsCommand);
+
+// Add CI command
+program
+  .command('add-ci [provider]')
+  .description('Add CI/CD configuration to an existing project')
+  .addHelpText(
+    'after',
+    `
+${chalk.bold('Examples:')}
+
+  ${chalk.gray('# Add CI interactively')}
+  ${chalk.cyan('$')} mcp-new add-ci
+
+  ${chalk.gray('# Add GitHub Actions')}
+  ${chalk.cyan('$')} mcp-new add-ci github
+
+  ${chalk.gray('# Add GitLab CI')}
+  ${chalk.cyan('$')} mcp-new add-ci gitlab
+
+  ${chalk.gray('# Add CircleCI')}
+  ${chalk.cyan('$')} mcp-new add-ci circleci
+
+${chalk.bold('Supported providers:')}
+  ${chalk.green('github')}      GitHub Actions
+  ${chalk.green('gitlab')}      GitLab CI
+  ${chalk.green('circleci')}    CircleCI
+`
+  )
+  .action(addCICommand);
+
 // Monorepo command group
 const monorepo = program.command('monorepo').description('Manage MCP monorepo workspaces');
 
@@ -274,10 +362,21 @@ monorepo
   .description('List all packages in the workspace')
   .action(monorepoListCommand);
 
-// Parse arguments
-program.parse();
+// Initialize plugin registry and parse arguments
+async function main() {
+  // Initialize plugin registry to discover installed plugins
+  await pluginRegistry.initialize();
 
-// If no arguments provided, show help
-if (process.argv.length === 2) {
-  program.help();
+  // Parse arguments
+  program.parse();
+
+  // If no arguments provided, show help
+  if (process.argv.length === 2) {
+    program.help();
+  }
 }
+
+main().catch((error) => {
+  console.error('Error:', error.message);
+  process.exit(1);
+});

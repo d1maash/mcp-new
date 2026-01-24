@@ -1,0 +1,184 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+<% if (language === 'typescript') { %>
+    strategy:
+      matrix:
+        node-version: [<%= nodeVersion %>, 22]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: <%= installCommand %>
+<% if (buildCommand) { %>
+      - name: Build
+        run: <%= buildCommand %>
+<% } %>
+<% if (testCommand) { %>
+      - name: Test
+        run: <%= testCommand %>
+<% } %>
+<% } else if (language === 'python') { %>
+    strategy:
+      matrix:
+        python-version: ['<%= pythonVersion %>', '3.12']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          <%= installCommand %>
+<% if (testCommand) { %>
+      - name: Test
+        run: <%= testCommand %>
+<% } %>
+<% } else if (language === 'go') { %>
+    strategy:
+      matrix:
+        go-version: ['<%= goVersion %>', '1.22']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Install dependencies
+        run: <%= installCommand %>
+<% if (buildCommand) { %>
+      - name: Build
+        run: <%= buildCommand %>
+<% } %>
+<% if (testCommand) { %>
+      - name: Test
+        run: <%= testCommand %>
+<% } %>
+<% } else if (language === 'rust') { %>
+    strategy:
+      matrix:
+        rust-version: [<%= rustVersion %>]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust-version }}
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install dependencies
+        run: <%= installCommand %>
+<% if (buildCommand) { %>
+      - name: Build
+        run: <%= buildCommand %>
+<% } %>
+<% if (testCommand) { %>
+      - name: Test
+        run: <%= testCommand %>
+<% } %>
+<% } else if (language === 'java' || language === 'kotlin') { %>
+    strategy:
+      matrix:
+        java-version: ['<%= javaVersion %>']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ matrix.java-version }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java-version }}
+          distribution: 'temurin'
+<% if (installCommand.includes('gradle')) { %>
+          cache: 'gradle'
+<% } else { %>
+          cache: 'maven'
+<% } %>
+<% if (buildCommand) { %>
+      - name: Build
+        run: <%= buildCommand %>
+<% } %>
+<% if (testCommand) { %>
+      - name: Test
+        run: <%= testCommand %>
+<% } %>
+<% } else if (language === 'csharp') { %>
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET <%= dotnetVersion %>
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '<%= dotnetVersion %>.x'
+
+      - name: Restore dependencies
+        run: <%= installCommand %>
+<% if (buildCommand) { %>
+      - name: Build
+        run: <%= buildCommand %>
+<% } %>
+<% if (testCommand) { %>
+      - name: Test
+        run: <%= testCommand %>
+<% } %>
+<% } else if (language === 'elixir') { %>
+    strategy:
+      matrix:
+        elixir-version: ['<%= elixirVersion %>']
+        otp-version: ['26']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: ${{ matrix.elixir-version }}
+          otp-version: ${{ matrix.otp-version }}
+
+      - name: Restore dependencies cache
+        uses: actions/cache@v4
+        with:
+          path: deps
+          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-mix-
+
+      - name: Install dependencies
+        run: <%= installCommand %>
+<% if (buildCommand) { %>
+      - name: Build
+        run: <%= buildCommand %>
+<% } %>
+<% if (testCommand) { %>
+      - name: Test
+        run: <%= testCommand %>
+<% } %>
+<% } %>

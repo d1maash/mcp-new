@@ -1,0 +1,233 @@
+stages:
+  - build
+  - test
+
+variables:
+  PROJECT_NAME: "<%= projectName %>"
+
+<% if (language === 'typescript') { %>
+image: node:<%= nodeVersion %>
+
+cache:
+  paths:
+    - node_modules/
+
+install:
+  stage: build
+  script:
+    - <%= installCommand %>
+  artifacts:
+    paths:
+      - node_modules/
+
+<% if (buildCommand) { %>
+build:
+  stage: build
+  script:
+    - <%= installCommand %>
+    - <%= buildCommand %>
+  artifacts:
+    paths:
+      - dist/
+<% } %>
+
+<% if (testCommand) { %>
+test:
+  stage: test
+  script:
+    - <%= installCommand %>
+    - <%= testCommand %>
+<% } %>
+<% } else if (language === 'python') { %>
+image: python:<%= pythonVersion %>
+
+cache:
+  paths:
+    - .pip-cache/
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.pip-cache"
+
+install:
+  stage: build
+  script:
+    - python -m pip install --upgrade pip
+    - <%= installCommand %>
+
+<% if (testCommand) { %>
+test:
+  stage: test
+  script:
+    - python -m pip install --upgrade pip
+    - <%= installCommand %>
+    - pip install pytest
+    - <%= testCommand %>
+<% } %>
+<% } else if (language === 'go') { %>
+image: golang:<%= goVersion %>
+
+cache:
+  paths:
+    - /go/pkg/mod/
+
+install:
+  stage: build
+  script:
+    - <%= installCommand %>
+
+<% if (buildCommand) { %>
+build:
+  stage: build
+  script:
+    - <%= installCommand %>
+    - <%= buildCommand %>
+<% } %>
+
+<% if (testCommand) { %>
+test:
+  stage: test
+  script:
+    - <%= installCommand %>
+    - <%= testCommand %>
+<% } %>
+<% } else if (language === 'rust') { %>
+image: rust:<%= rustVersion %>
+
+cache:
+  paths:
+    - target/
+    - .cargo/
+
+variables:
+  CARGO_HOME: "$CI_PROJECT_DIR/.cargo"
+
+install:
+  stage: build
+  script:
+    - <%= installCommand %>
+
+<% if (buildCommand) { %>
+build:
+  stage: build
+  script:
+    - <%= buildCommand %>
+<% } %>
+
+<% if (testCommand) { %>
+test:
+  stage: test
+  script:
+    - <%= testCommand %>
+<% } %>
+<% } else if (language === 'java' || language === 'kotlin') { %>
+image: eclipse-temurin:<%= javaVersion %>
+
+<% if (installCommand.includes('gradle')) { %>
+cache:
+  paths:
+    - .gradle/
+    - build/
+
+variables:
+  GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
+
+<% if (buildCommand) { %>
+build:
+  stage: build
+  script:
+    - <%= buildCommand %>
+  artifacts:
+    paths:
+      - build/libs/
+<% } %>
+
+<% if (testCommand) { %>
+test:
+  stage: test
+  script:
+    - <%= testCommand %>
+<% } %>
+<% } else { %>
+cache:
+  paths:
+    - .m2/repository/
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+
+<% if (buildCommand) { %>
+build:
+  stage: build
+  script:
+    - <%= buildCommand %>
+  artifacts:
+    paths:
+      - target/
+<% } %>
+
+<% if (testCommand) { %>
+test:
+  stage: test
+  script:
+    - <%= testCommand %>
+<% } %>
+<% } %>
+<% } else if (language === 'csharp') { %>
+image: mcr.microsoft.com/dotnet/sdk:<%= dotnetVersion %>
+
+cache:
+  paths:
+    - packages/
+
+install:
+  stage: build
+  script:
+    - <%= installCommand %>
+
+<% if (buildCommand) { %>
+build:
+  stage: build
+  script:
+    - <%= installCommand %>
+    - <%= buildCommand %>
+  artifacts:
+    paths:
+      - bin/
+<% } %>
+
+<% if (testCommand) { %>
+test:
+  stage: test
+  script:
+    - <%= installCommand %>
+    - <%= testCommand %>
+<% } %>
+<% } else if (language === 'elixir') { %>
+image: elixir:<%= elixirVersion %>
+
+cache:
+  paths:
+    - deps/
+    - _build/
+
+install:
+  stage: build
+  script:
+    - <%= installCommand %>
+
+<% if (buildCommand) { %>
+build:
+  stage: build
+  script:
+    - <%= installCommand %>
+    - <%= buildCommand %>
+<% } %>
+
+<% if (testCommand) { %>
+test:
+  stage: test
+  script:
+    - <%= installCommand %>
+    - <%= testCommand %>
+<% } %>
+<% } %>

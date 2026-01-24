@@ -1,10 +1,14 @@
 import path from 'path';
 import type { CLIOptions, ProjectConfig, Language, JavaBuildTool } from '../types/config.js';
+import type { CIProvider } from '../types/ci.js';
+import { isValidCIProvider } from '../types/ci.js';
 import { runWizard, runQuickWizard } from '../prompts/index.js';
 import { generateFromWizard } from '../generators/from-wizard.js';
 import { generateFromOpenAPI } from '../generators/from-openapi.js';
 import { generateFromPrompt } from '../generators/from-prompt.js';
-import { generateFromPreset, validatePresetId } from '../generators/from-preset.js';
+import { generateFromPreset } from '../generators/from-preset.js';
+import { isExternalPreset, isValidPresetId, PRESET_IDS } from '../presets/index.js';
+import { generateCI } from '../generators/ci.js';
 import { logger } from '../utils/logger.js';
 import { exists } from '../utils/file-system.js';
 
@@ -98,6 +102,11 @@ async function handleWizardGeneration(
   }
 
   await generateFromWizard(config);
+
+  // Generate CI if requested
+  if (options.ci) {
+    await handleCIGeneration(config.name, config.language, config.javaBuildTool, options.ci);
+  }
 }
 
 async function handleOpenAPIGeneration(
@@ -141,15 +150,48 @@ async function handlePresetGeneration(
 ): Promise<void> {
   const presetId = options.preset!;
 
-  // Validate preset ID
-  validatePresetId(presetId);
+  // Validate preset ID for local presets
+  if (!isExternalPreset(presetId) && !isValidPresetId(presetId)) {
+    logger.error(
+      `Invalid preset "${presetId}". Valid local presets: ${PRESET_IDS.join(', ')}\n` +
+        `For external presets use: @org/package or github:user/repo`
+    );
+    process.exit(1);
+  }
 
-  await generateFromPreset({
+  const result = await generateFromPreset({
     projectName,
-    presetId: presetId as 'database' | 'rest-api' | 'filesystem',
+    presetId,
     language: getLanguageFromOptions(options),
     skipInstall: options.skipInstall,
     useDefaults: options.yes,
     javaBuildTool: getJavaBuildToolFromOptions(options),
+  });
+
+  // Generate CI if requested
+  if (options.ci && result) {
+    await handleCIGeneration(result.name, result.language, result.javaBuildTool, options.ci);
+  }
+}
+
+async function handleCIGeneration(
+  projectName: string,
+  language: Language,
+  javaBuildTool: JavaBuildTool | undefined,
+  ciProvider: string
+): Promise<void> {
+  if (!isValidCIProvider(ciProvider)) {
+    logger.error(`Invalid CI provider: ${ciProvider}. Valid options: github, gitlab, circleci`);
+    return;
+  }
+
+  const projectDir = path.resolve(process.cwd(), projectName);
+
+  await generateCI({
+    projectDir,
+    provider: ciProvider as CIProvider,
+    language,
+    javaBuildTool,
+    projectName,
   });
 }
