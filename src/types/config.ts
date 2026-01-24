@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
-export const LanguageSchema = z.enum([
+// Built-in languages
+export const BuiltinLanguageSchema = z.enum([
   'typescript',
   'python',
   'go',
@@ -10,7 +11,27 @@ export const LanguageSchema = z.enum([
   'csharp',
   'elixir',
 ]);
-export type Language = z.infer<typeof LanguageSchema>;
+export type BuiltinLanguage = z.infer<typeof BuiltinLanguageSchema>;
+
+// Language can be a built-in or a plugin-provided language (any string)
+export const LanguageSchema = z.string();
+export type Language = string;
+
+// List of built-in languages for checks
+export const BUILTIN_LANGUAGES: BuiltinLanguage[] = [
+  'typescript',
+  'python',
+  'go',
+  'rust',
+  'java',
+  'kotlin',
+  'csharp',
+  'elixir',
+];
+
+export function isBuiltinLanguage(lang: string): lang is BuiltinLanguage {
+  return BUILTIN_LANGUAGES.includes(lang as BuiltinLanguage);
+}
 
 export const JavaBuildToolSchema = z.enum(['maven', 'gradle']);
 export type JavaBuildTool = z.infer<typeof JavaBuildToolSchema>;
@@ -80,4 +101,5 @@ export interface CLIOptions {
   fromPrompt?: boolean;
   preset?: string;
   yes?: boolean;
+  ci?: string;
 }

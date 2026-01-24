@@ -338,15 +338,97 @@ case "query":
 
 ---
 
+## External Presets
+
+You can use presets from npm packages or GitHub repositories.
+
+### npm Presets
+
+Install and use presets from npm:
+
+```bash
+# Use directly (will be fetched and cached)
+mcp-new my-server --preset @company/mcp-preset-name
+```
+
+### GitHub Presets
+
+Use presets directly from GitHub:
+
+```bash
+mcp-new my-server --preset github:user/repo
+mcp-new my-server --preset github:user/repo@branch
+```
+
+### Preset Caching
+
+External presets are cached in `~/.mcp-new/preset-cache/` with a 24-hour TTL.
+
+```bash
+# List cached presets
+mcp-new preset-cache list
+
+# Clear cache
+mcp-new preset-cache clear
+
+# Show cache path
+mcp-new preset-cache path
+```
+
+---
+
 ## Creating Custom Presets
 
-Currently, custom presets are not supported via CLI. However, you can:
+Create your own preset as an npm package or GitHub repo.
 
-1. Create a project with a preset
-2. Modify it to your needs
-3. Use it as a template for future projects
+### Preset Structure
 
-Feature request for custom presets: [GitHub Issues](https://github.com/d1maash/mcp-new/issues)
+```
+my-preset/
+├── mcp-preset.json    # Preset manifest (required)
+└── README.md
+```
+
+### Preset Manifest (mcp-preset.json)
+
+```json
+{
+  "id": "my-custom-preset",
+  "name": "My Custom Preset",
+  "description": "A custom MCP server preset",
+  "version": "1.0.0",
+  "tools": [
+    {
+      "name": "my_tool",
+      "description": "Does something useful",
+      "parameters": [
+        {
+          "name": "input",
+          "type": "string",
+          "description": "Input value",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "author": "Your Name",
+  "repository": "https://github.com/user/repo"
+}
+```
+
+### Publishing to npm
+
+```bash
+npm publish --access public
+```
+
+### Using from GitHub
+
+Push to GitHub and use:
+
+```bash
+mcp-new my-server --preset github:your-username/my-preset
+```
 
 ---
 

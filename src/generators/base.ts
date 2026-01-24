@@ -1,6 +1,7 @@
 import path from 'path';
 import { execa } from 'execa';
 import type { ProjectConfig, GeneratorContext } from '../types/config.js';
+import { isBuiltinLanguage } from '../types/config.js';
 import {
   ensureDir,
   renderTemplateToFile,
@@ -13,6 +14,7 @@ import {
 import { initGitRepository, createInitialCommit, isGitInstalled } from '../utils/git.js';
 import { logger } from '../utils/logger.js';
 import { withSpinner } from '../utils/spinner.js';
+import { pluginRegistry } from '../plugins/index.js';
 
 export abstract class BaseGenerator {
   protected config: ProjectConfig;
@@ -76,6 +78,12 @@ export abstract class BaseGenerator {
       return;
     }
 
+    // Check if this is a plugin language
+    if (!isBuiltinLanguage(this.config.language)) {
+      await this.installPluginDependencies();
+      return;
+    }
+
     switch (this.config.language) {
       case 'typescript':
         await this.installNodeDependencies();
@@ -100,6 +108,25 @@ export abstract class BaseGenerator {
         await this.installElixirDependencies();
         break;
     }
+  }
+
+  private async installPluginDependencies(): Promise<void> {
+    const installCommand = pluginRegistry.getPluginInstallCommand(this.config.language);
+
+    if (!installCommand) {
+      logger.info(`No install command defined for plugin language: ${this.config.language}`);
+      return;
+    }
+
+    await withSpinner(
+      'Installing dependencies...',
+      async () => {
+        const [cmd, ...args] = installCommand.split(' ');
+        await execa(cmd, args, { cwd: this.outputDir });
+      },
+      'Dependencies installed',
+      'Failed to install dependencies'
+    );
   }
 
   private async installNodeDependencies(): Promise<void> {
@@ -327,11 +354,20 @@ export function createGeneratorContext(
 ): GeneratorContext {
   const outputDir = outputPath || path.resolve(process.cwd(), config.name);
 
-  // For Java/Kotlin, include the build tool in the template path
+  // Determine template directory
   let templateDir: string;
-  if ((config.language === 'java' || config.language === 'kotlin') && config.javaBuildTool) {
+
+  // Check if this is a plugin language
+  const pluginTemplateDir = pluginRegistry.getPluginTemplateDir(config.language);
+
+  if (pluginTemplateDir) {
+    // Use plugin template directory
+    templateDir = pluginTemplateDir;
+  } else if ((config.language === 'java' || config.language === 'kotlin') && config.javaBuildTool) {
+    // For Java/Kotlin, include the build tool in the template path
     templateDir = path.join(getTemplateDir(), config.language, config.javaBuildTool);
   } else {
+    // Default: use built-in template directory
     templateDir = path.join(getTemplateDir(), config.language);
   }
 
