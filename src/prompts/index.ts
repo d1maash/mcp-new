@@ -14,6 +14,7 @@ export * from './resources.js';
 export * from './generation-method.js';
 export * from './preset.js';
 export * from './java-build-tool.js';
+export * from './ci-provider.js';
 
 export interface WizardOptions {
   defaultName?: string;

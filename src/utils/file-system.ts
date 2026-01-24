@@ -94,6 +94,19 @@ export function getTemplateDir(): string {
   return prodPath;
 }
 
+/**
+ * Get the template directory for a language, supporting both built-in and plugin languages.
+ */
+export function getTemplateDirForLanguage(language: string, pluginTemplateDir?: string): string {
+  // If a plugin template directory is provided, use it
+  if (pluginTemplateDir) {
+    return pluginTemplateDir;
+  }
+
+  // Otherwise, use the built-in template directory
+  return path.join(getTemplateDir(), language);
+}
+
 export function resolveOutputPath(basePath: string, ...segments: string[]): string {
   return path.resolve(basePath, ...segments);
 }

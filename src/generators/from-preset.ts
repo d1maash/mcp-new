@@ -1,6 +1,12 @@
 import { BaseGenerator, createGeneratorContext } from './base.js';
 import type { ProjectConfig, GeneratorContext, Language, JavaBuildTool } from '../types/config.js';
-import { getPreset, isValidPresetId, type PresetId } from '../presets/index.js';
+import {
+  getPreset,
+  getPresetByIdentifier,
+  isValidPresetId,
+  isExternalPreset,
+  type PresetId,
+} from '../presets/index.js';
 import { logger } from '../utils/logger.js';
 import { withSpinner } from '../utils/spinner.js';
 import { promptProjectName, promptProjectDescription } from '../prompts/project-name.js';
@@ -61,17 +67,30 @@ export class PresetGenerator extends BaseGenerator {
 
 export interface PresetGeneratorOptions {
   projectName?: string;
-  presetId: PresetId;
+  presetId: string; // Can be local PresetId or external identifier
   language?: Language;
   skipInstall?: boolean;
   useDefaults?: boolean;
   javaBuildTool?: JavaBuildTool;
 }
 
-export async function generateFromPreset(options: PresetGeneratorOptions): Promise<void> {
-  const preset = getPreset(options.presetId);
-  if (!preset) {
-    throw new Error(`Invalid preset: ${options.presetId}`);
+export async function generateFromPreset(options: PresetGeneratorOptions): Promise<ProjectConfig> {
+  // Resolve preset - supports both local and external presets
+  let preset;
+
+  if (isExternalPreset(options.presetId)) {
+    logger.info(`Fetching external preset: ${options.presetId}...`);
+    preset = await withSpinner(
+      'Resolving external preset...',
+      async () => await getPresetByIdentifier(options.presetId),
+      'Preset resolved',
+      'Failed to resolve preset'
+    );
+  } else {
+    preset = getPreset(options.presetId);
+    if (!preset) {
+      throw new Error(`Invalid preset: ${options.presetId}`);
+    }
   }
 
   // Get project name
@@ -110,6 +129,8 @@ export async function generateFromPreset(options: PresetGeneratorOptions): Promi
   const context = createGeneratorContext(config);
   const generator = new PresetGenerator(context, preset.name);
   await generator.generate();
+
+  return config;
 }
 
 export function validatePresetId(presetId: string): presetId is PresetId {
