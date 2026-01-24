@@ -78,7 +78,7 @@ ${chalk.bold('Learn More:')}
 program
   .name('mcp-new')
   .description('CLI tool for generating MCP (Model Context Protocol) servers')
-  .version('1.5.0')
+  .version('1.6.1')
   .addHelpText('beforeAll', logo)
   .addHelpText('after', examples);
 

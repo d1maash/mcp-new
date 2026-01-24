@@ -38,9 +38,10 @@ mcp-new <project-name> [options]
 | `--elixir` | `-e` | Use Elixir template |
 | `--maven` | | Use Maven build tool (Java/Kotlin) |
 | `--gradle` | | Use Gradle build tool (Java/Kotlin) |
-| `--preset <name>` | | Use preset template |
+| `--preset <name>` | | Use preset template (local or external) |
 | `--from-openapi <path>` | | Generate from OpenAPI spec |
 | `--from-prompt` | | Generate using AI |
+| `--ci <provider>` | | Add CI/CD configuration (github, gitlab, circleci) |
 | `--skip-install` | | Skip dependency installation |
 | `--yes` | `-y` | Use defaults, skip prompts |
 | `--version` | `-V` | Show version number |
@@ -66,6 +67,13 @@ mcp-new my-server --from-openapi ./api.yaml
 
 # Using AI
 mcp-new my-server --from-prompt
+
+# With CI/CD (GitHub Actions)
+mcp-new my-server -t --ci github
+
+# With external preset
+mcp-new my-server --preset @company/custom-preset
+mcp-new my-server --preset github:user/repo
 ```
 
 ---
@@ -355,6 +363,116 @@ See [Monorepo Documentation](./monorepo.md) for more details.
 
 ---
 
+## CI/CD Commands
+
+### add-ci
+
+Add CI/CD configuration to an existing project.
+
+```bash
+mcp-new add-ci [provider]
+```
+
+#### Arguments
+
+| Argument | Description | Required |
+|----------|-------------|----------|
+| `provider` | CI provider (github, gitlab, circleci) | No (prompted if not provided) |
+
+#### Supported Providers
+
+| Provider | Output |
+|----------|--------|
+| `github` | `.github/workflows/ci.yml` |
+| `gitlab` | `.gitlab-ci.yml` |
+| `circleci` | `.circleci/config.yml` |
+
+#### Examples
+
+```bash
+# Add CI interactively
+mcp-new add-ci
+
+# Add GitHub Actions
+mcp-new add-ci github
+
+# Add GitLab CI
+mcp-new add-ci gitlab
+
+# Add CircleCI
+mcp-new add-ci circleci
+```
+
+---
+
+## Documentation Commands
+
+### docs
+
+Start an interactive documentation server with hot reload.
+
+```bash
+mcp-new docs [options]
+```
+
+#### Options
+
+| Option | Alias | Description |
+|--------|-------|-------------|
+| `--port <port>` | `-p` | Port to run the server on (default: 3000) |
+
+#### Features
+
+- Hot reload (changes refresh automatically via SSE)
+- Full-text search across all markdown files
+- GitHub-flavored markdown rendering
+- Responsive sidebar navigation
+
+#### Examples
+
+```bash
+# Start docs server on default port
+mcp-new docs
+
+# Start on custom port
+mcp-new docs --port 4000
+```
+
+---
+
+## Preset Cache Commands
+
+### preset-cache
+
+Manage external preset cache.
+
+```bash
+mcp-new preset-cache [action]
+```
+
+#### Actions
+
+| Action | Description |
+|--------|-------------|
+| `list` | List cached presets (default) |
+| `clear` | Clear all cached presets |
+| `path` | Show cache directory path |
+
+#### Examples
+
+```bash
+# List cached presets
+mcp-new preset-cache list
+
+# Clear preset cache
+mcp-new preset-cache clear
+
+# Show cache path
+mcp-new preset-cache path
+```
+
+---
+
 ## Language Flags
 
 Choose the programming language for your project:
@@ -382,7 +500,7 @@ Use pre-configured project templates:
 --preset <name>
 ```
 
-### Available Presets
+### Built-in Presets
 
 | Name | Description |
 |------|-------------|
@@ -390,10 +508,28 @@ Use pre-configured project templates:
 | `rest-api` | HTTP client tools |
 | `filesystem` | File system tools |
 
-### Example
+### External Presets
+
+You can use external presets from npm or GitHub:
+
+| Format | Example |
+|--------|---------|
+| npm package | `@company/preset-name` |
+| GitHub repo | `github:user/repo` |
+
+External presets are cached in `~/.mcp-new/preset-cache/` with a 24-hour TTL.
+
+### Examples
 
 ```bash
+# Built-in preset
 mcp-new my-db --preset database -t -y
+
+# npm preset
+mcp-new my-server --preset @company/custom-preset
+
+# GitHub preset
+mcp-new my-server --preset github:user/mcp-preset
 ```
 
 See [Presets Documentation](./presets.md) for details.
