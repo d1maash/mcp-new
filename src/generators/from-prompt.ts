@@ -161,6 +161,8 @@ export async function generateFromPrompt(baseConfig: Partial<ProjectConfig>): Pr
     transport: baseConfig.transport || 'stdio',
     tools,
     resources: [],
+    prompts: [],
+    sampling: baseConfig.sampling || { enabled: true },
     includeExampleTool: false,
     skipInstall: baseConfig.skipInstall || false,
     initGit: baseConfig.initGit !== false,

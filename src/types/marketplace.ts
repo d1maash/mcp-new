@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { ToolConfigSchema } from './config.js';
+import {
+  ToolConfigSchema,
+  ResourceConfigSchema,
+  PromptConfigSchema,
+  SamplingConfigSchema,
+} from './config.js';
 
 export const ExternalPresetManifestSchema = z.object({
   id: z.string(),
@@ -7,6 +12,9 @@ export const ExternalPresetManifestSchema = z.object({
   description: z.string(),
   version: z.string(),
   tools: z.array(ToolConfigSchema),
+  resources: z.array(ResourceConfigSchema).default([]),
+  prompts: z.array(PromptConfigSchema).default([]),
+  sampling: SamplingConfigSchema.optional(),
   author: z.string().optional(),
   repository: z.string().optional(),
 });

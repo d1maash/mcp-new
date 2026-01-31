@@ -1,7 +1,12 @@
 import { DATABASE_PRESET } from './database.js';
 import { REST_API_PRESET } from './rest-api.js';
 import { FILESYSTEM_PRESET } from './filesystem.js';
-import type { ToolConfig } from '../types/config.js';
+import type {
+  ToolConfig,
+  ResourceConfig,
+  PromptConfig,
+  SamplingConfig,
+} from '../types/config.js';
 import {
   parsePresetIdentifier,
   isExternalPreset,
@@ -18,12 +23,15 @@ export interface Preset {
   name: string;
   description: string;
   tools: ToolConfig[];
+  resources?: ResourceConfig[];
+  prompts?: PromptConfig[];
+  sampling?: SamplingConfig;
 }
 
 export const PRESETS: Record<string, Preset> = {
-  database: DATABASE_PRESET,
-  'rest-api': REST_API_PRESET,
-  filesystem: FILESYSTEM_PRESET,
+  database: DATABASE_PRESET as Preset,
+  'rest-api': REST_API_PRESET as Preset,
+  filesystem: FILESYSTEM_PRESET as Preset,
 };
 
 export const PRESET_IDS = Object.keys(PRESETS) as PresetId[];
@@ -72,6 +80,9 @@ function externalManifestToPreset(manifest: ExternalPresetManifest): Preset {
     name: manifest.name,
     description: manifest.description,
     tools: manifest.tools,
+    resources: manifest.resources,
+    prompts: manifest.prompts,
+    sampling: manifest.sampling,
   };
 }
 

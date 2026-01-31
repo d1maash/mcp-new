@@ -15,8 +15,10 @@ import {
 } from './commands/monorepo.js';
 import { addCICommand } from './commands/add-ci.js';
 import { docsCommand } from './commands/docs.js';
+import { webCommand } from './commands/web.js';
 import { presetCacheCommand } from './commands/preset-cache.js';
 import { pluginRegistry } from './plugins/index.js';
+import { devCommand } from './commands/dev.js';
 
 const program = new Command();
 
@@ -78,7 +80,7 @@ ${chalk.bold('Learn More:')}
 program
   .name('mcp-new')
   .description('CLI tool for generating MCP (Model Context Protocol) servers')
-  .version('1.6.1')
+  .version('1.7.0')
   .addHelpText('beforeAll', logo)
   .addHelpText('after', examples);
 
@@ -269,6 +271,59 @@ ${chalk.bold('Features:')}
 `
   )
   .action(docsCommand);
+
+// Web generator command
+program
+  .command('web')
+  .description('Start a web-based project generator UI')
+  .option('-p, --port <port>', 'Port to run the server on', '3100')
+  .addHelpText(
+    'after',
+    `
+${chalk.bold('Examples:')}
+
+  ${chalk.gray('# Start web generator on default port (3100)')}
+  ${chalk.cyan('$')} mcp-new web
+
+  ${chalk.gray('# Start web generator on custom port')}
+  ${chalk.cyan('$')} mcp-new web --port 8080
+
+${chalk.bold('Features:')}
+  ${chalk.green('Wizard')}        - Multi-step project configuration
+  ${chalk.green('Preview')}       - View generated files before downloading
+  ${chalk.green('Presets')}       - Quick-fill from built-in presets
+  ${chalk.green('Download')}      - Download project as tar.gz archive
+`
+  )
+  .action(webCommand);
+
+program
+  .command('dev')
+  .description('Run MCP server in dev mode with hot reload, inspector, and traffic logging')
+  .option('-p, --project <path>', 'Project directory (default: current directory)')
+  .option('--cmd <command>', 'Override run command')
+  .option('--build <command>', 'Override build command')
+  .option('--watch <paths>', 'Comma-separated list of paths to watch for reloads')
+  .option('--no-inspector', 'Skip launching MCP Inspector (run raw server only)')
+  .addHelpText(
+    'after',
+    `
+${chalk.bold('Examples:')}
+
+  ${chalk.gray('# Dev mode for current project')}
+  ${chalk.cyan('$')} mcp-new dev
+
+  ${chalk.gray('# Dev mode for a specific directory')}
+  ${chalk.cyan('$')} mcp-new dev --project ./packages/api-server
+
+  ${chalk.gray('# Custom run and build commands')}
+  ${chalk.cyan('$')} mcp-new dev --cmd "npm start" --build "npm run build"
+
+  ${chalk.gray('# Disable inspector if you just need raw server')}
+  ${chalk.cyan('$')} mcp-new dev --no-inspector
+`
+  )
+  .action(devCommand);
 
 // Add CI command
 program

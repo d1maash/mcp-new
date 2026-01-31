@@ -102,4 +102,30 @@ export const FILESYSTEM_PRESET = {
       ],
     },
   ] as ToolConfig[],
+  prompts: [
+    {
+      name: 'summarize_file',
+      description: 'Ask the model to summarize or inspect a file using available tools',
+      arguments: [
+        {
+          name: 'goal',
+          description: 'What you want to learn from the file',
+          required: true,
+        },
+        {
+          name: 'path',
+          description: 'Path to the file to inspect',
+          required: false,
+        },
+      ],
+      messages: [
+        {
+          role: 'user',
+          content:
+            'Help me with {{goal}} for file {{path}}. Use the available filesystem tools to read and summarize relevant content.',
+        },
+      ],
+    },
+  ],
+  sampling: { enabled: true },
 };

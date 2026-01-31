@@ -42,6 +42,7 @@ mcp-new my-server
 | 🧙 **Interactive Wizard** | Step-by-step prompts to configure your MCP server |
 | 🌍 **Multi-Language** | TypeScript, Python, Go, Rust, Java, Kotlin, C#, Elixir |
 | 📦 **Preset Templates** | Ready-to-use templates for common use cases |
+| 🧩 **Prompts & Sampling** | Scaffold MCP prompts and sampling/createMessage helper tool |
 | 🗂️ **Monorepo Support** | Manage multiple MCP servers in one workspace |
 | 📄 **OpenAPI Import** | Auto-generate tools from OpenAPI/Swagger specs |
 | 🤖 **AI Generation** | Create tools from natural language using Claude |
@@ -62,6 +63,8 @@ mcp-new my-project --preset <name> -y
 | `database` | Database CRUD operations | `query` `insert` `update` `delete` `list_tables` |
 | `rest-api` | HTTP client wrapper | `http_get` `http_post` `http_put` `http_delete` `set_base_url` |
 | `filesystem` | File system operations | `read_file` `write_file` `list_directory` `search_files` `file_info` |
+
+Each preset also ships with prompt templates and enables the sampling helper tool so you can request model output from within your server.
 
 <details>
 <summary>📋 Example: Database preset</summary>
@@ -150,6 +153,10 @@ mcp-new add-tool
 # List all available presets
 mcp-new list-presets
 
+# Dev mode with hot reload and MCP Inspector
+mcp-new dev
+mcp-new dev --project ./packages/my-server --no-inspector
+
 # Validate current MCP server project
 mcp-new validate
 
@@ -192,6 +199,7 @@ Commands:
   init                   Initialize in current directory
   add-tool               Add tool to existing project
   list-presets           List all available preset templates
+  dev                    Run dev mode with hot reload and inspector
   validate               Validate current MCP server project
   upgrade                Upgrade MCP SDK to latest version
   monorepo init          Create a monorepo workspace

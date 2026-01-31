@@ -264,6 +264,8 @@ export async function monorepoAddCommand(
         transport: 'stdio',
         tools: [],
         resources: [],
+        prompts: [],
+        sampling: { enabled: true },
         includeExampleTool: true,
         skipInstall: options.skipInstall || false,
         initGit: false, // Don't init git for individual packages

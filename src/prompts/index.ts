@@ -4,6 +4,8 @@ import { promptLanguage } from './language.js';
 import { promptTransport } from './transport.js';
 import { promptIncludeExampleTool, promptAddTools, promptMultipleTools } from './tools.js';
 import { promptAddResources, promptMultipleResources } from './resources.js';
+import { promptAddPrompts, promptMultiplePrompts } from './prompt-templates.js';
+import { promptSamplingConfig } from './sampling.js';
 import { promptJavaBuildTool } from './java-build-tool.js';
 
 export * from './project-name.js';
@@ -11,10 +13,12 @@ export * from './language.js';
 export * from './transport.js';
 export * from './tools.js';
 export * from './resources.js';
+export * from './prompt-templates.js';
 export * from './generation-method.js';
 export * from './preset.js';
 export * from './java-build-tool.js';
 export * from './ci-provider.js';
+export * from './sampling.js';
 
 export interface WizardOptions {
   defaultName?: string;
@@ -46,6 +50,7 @@ export async function runWizard(options: WizardOptions = {}): Promise<ProjectCon
 
   let tools: ProjectConfig['tools'] = [];
   let resources: ProjectConfig['resources'] = [];
+  let prompts: ProjectConfig['prompts'] = [];
 
   if (!options.skipAdvanced) {
     const wantTools = await promptAddTools();
@@ -57,7 +62,14 @@ export async function runWizard(options: WizardOptions = {}): Promise<ProjectCon
     if (wantResources) {
       resources = await promptMultipleResources();
     }
+
+    const wantPrompts = await promptAddPrompts();
+    if (wantPrompts) {
+      prompts = await promptMultiplePrompts();
+    }
   }
+
+  const sampling = options.skipAdvanced ? { enabled: false } : await promptSamplingConfig(true);
 
   return {
     name,
@@ -66,6 +78,8 @@ export async function runWizard(options: WizardOptions = {}): Promise<ProjectCon
     transport,
     tools,
     resources,
+    prompts,
+    sampling,
     includeExampleTool,
     skipInstall: false,
     initGit: true,
@@ -103,6 +117,8 @@ export async function runQuickWizard(
     transport,
     tools: [],
     resources: [],
+    prompts: [],
+    sampling: { enabled: true },
     includeExampleTool,
     skipInstall: false,
     initGit: true,

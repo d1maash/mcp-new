@@ -102,6 +102,32 @@ A sample tool that demonstrates basic MCP tool functionality.
 <% } %>
 
 <% }); %>
+<% if (prompts && prompts.length) { %>
+## Available Prompts
+
+Prompt templates can be fetched via `prompts/list` and `prompts/get`. Use `{{argument}}` placeholders inside prompt messages.
+
+<% prompts.forEach(function(prompt) { %>
+### `<%= prompt.name %>`
+
+<%= prompt.description || 'Prompt template' %>
+
+<% if (prompt.arguments && prompt.arguments.length > 0) { %>
+| Argument | Required | Description |
+|----------|----------|-------------|
+<% prompt.arguments.forEach(function(arg) { %>| `<%= arg.name %>` | <%= arg.required ? 'Yes' : 'No' %> | <%= arg.description || '' %> |
+<% }); %>
+<% } else { %>
+*This prompt has no arguments.*
+<% } %>
+
+<% }); %>
+<% } %>
+<% if (sampling && sampling.enabled) { %>
+## Sampling Helper
+
+The generated server includes a `sample_text` tool that issues a `sampling/createMessage` request through the connected client. Provide `prompt` (and optional `system_prompt`) to draft model responses from within tool calls.
+<% } %>
 ## Project Structure
 
 ```

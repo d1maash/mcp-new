@@ -4,6 +4,9 @@
 """
 
 import asyncio
+import re
+from typing import Any
+
 from mcp.server import Server
 <% if (transport === 'stdio') { %>
 from mcp.server.stdio import stdio_server
@@ -12,49 +15,179 @@ from mcp.server.sse import SseServerTransport
 <% } %>
 from mcp.types import Tool, TextContent
 
+PROMPTS: list[dict[str, Any]] = [
+<% prompts.forEach(function(prompt, index) { %>
+    {
+        "name": "<%= prompt.name %>",
+        "description": "<%= prompt.description || '' %>",
+        "arguments": [
+<% prompt.arguments.forEach(function(arg, argIndex) { %>
+            {
+                "name": "<%= arg.name %>",
+                "description": "<%= arg.description || '' %>",
+                "required": <%= arg.required ? 'True' : 'False' %>,
+            }<%= argIndex < prompt.arguments.length - 1 ? ',' : '' %>
+<% }); %>
+        ],
+        "messages": [
+<% prompt.messages.forEach(function(message, messageIndex) { %>
+            {
+                "role": "<%= message.role %>",
+                "content": "<%- message.content.replace(/\"/g, '\\"') %>",
+            }<%= messageIndex < prompt.messages.length - 1 ? ',' : '' %>
+<% }); %>
+        ],
+    }<%= index < prompts.length - 1 ? ',' : '' %>
+<% }); %>
+]
+
+RESOURCES: list[dict[str, str]] = [
+<% resources.forEach(function(resource, index) { %>
+    {
+        "uri": "<%= resource.uri %>",
+        "name": "<%= resource.name %>",
+        "description": "<%= resource.description %>",
+        "mimeType": "<%= resource.mimeType || '' %>",
+    }<%= index < resources.length - 1 ? ',' : '' %>
+<% }); %>
+]
+
+TOOLS: list[Tool] = [
+<% if (includeExampleTool) { %>
+    Tool(
+        name="example_tool",
+        description="An example tool that echoes the input",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "The query to echo",
+                },
+            },
+            "required": ["query"],
+        },
+    ),
+<% } %>
+<% tools.forEach(function(tool) { %>
+    Tool(
+        name="<%= tool.name %>",
+        description="<%= tool.description %>",
+        inputSchema={
+            "type": "object",
+            "properties": {
+<% tool.parameters.forEach(function(param, index) { %>
+                "<%= param.name %>": {
+                    "type": "<%= param.type %>",
+                    "description": "<%= param.description %>",
+                }<%= index < tool.parameters.length - 1 ? ',' : '' %>
+<% }); %>
+            },
+            "required": [<%= tool.parameters.filter(p => p.required).map(p => '"' + p.name + '"').join(', ') %>],
+        },
+    ),
+<% }); %>
+<% if (sampling && sampling.enabled) { %>
+    Tool(
+        name="sample_text",
+        description="Send a sampling request through the connected client LLM",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "prompt": {
+                    "type": "string",
+                    "description": "Prompt to send to the model",
+                },
+                "system_prompt": {
+                    "type": "string",
+                    "description": "Optional system prompt override",
+                },
+            },
+            "required": ["prompt"],
+        },
+    ),
+<% } %>
+]
+
 # Create the server instance
 server = Server("<%= name %>")
+
+
+def _render_prompt_template(template: str, args: dict[str, Any]) -> str:
+    def replace(match: re.Match[str]) -> str:
+        key = match.group(1).strip()
+        return str(args.get(key, f"{{{{{key}}}}}"))
+
+    return re.sub(r"{{(.*?)}}", replace, template)
 
 
 @server.list_tools()
 async def list_tools() -> list[Tool]:
     """List available tools."""
+    return TOOLS
+
+
+@server.list_prompts()
+async def list_prompts() -> list[dict[str, Any]]:
+    """List available prompt templates."""
     return [
-<% if (includeExampleTool) { %>
-        Tool(
-            name="example_tool",
-            description="An example tool that echoes the input",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "query": {
-                        "type": "string",
-                        "description": "The query to echo",
-                    },
-                },
-                "required": ["query"],
-            },
-        ),
-<% } %>
-<% tools.forEach(function(tool) { %>
-        Tool(
-            name="<%= tool.name %>",
-            description="<%= tool.description %>",
-            inputSchema={
-                "type": "object",
-                "properties": {
-<% tool.parameters.forEach(function(param, index) { %>
-                    "<%= param.name %>": {
-                        "type": "<%= param.type %>",
-                        "description": "<%= param.description %>",
-                    }<%= index < tool.parameters.length - 1 ? ',' : '' %>
-<% }); %>
-                },
-                "required": [<%= tool.parameters.filter(p => p.required).map(p => '"' + p.name + '"').join(', ') %>],
-            },
-        ),
-<% }); %>
+        {
+            "name": prompt["name"],
+            "description": prompt.get("description"),
+            "arguments": prompt.get("arguments", []),
+        }
+        for prompt in PROMPTS
     ]
+
+
+@server.get_prompt()
+async def get_prompt(name: str, arguments: dict[str, str] | None = None) -> dict[str, Any]:
+    """Render a prompt by name."""
+    prompt = next((prompt for prompt in PROMPTS if prompt["name"] == name), None)
+    if not prompt:
+        raise ValueError(f"Prompt not found: {name}")
+
+    args = arguments or {}
+
+    return {
+        "description": prompt.get("description"),
+        "messages": [
+            {
+                "role": message["role"],
+                "content": [
+                    {
+                        "type": "text",
+                        "text": _render_prompt_template(message["content"], args),
+                    }
+                ],
+            }
+            for message in prompt.get("messages", [])
+        ],
+    }
+
+
+@server.list_resources()
+async def list_resources() -> list[dict[str, str]]:
+    """List available resources."""
+    return RESOURCES
+
+
+@server.read_resource()
+async def read_resource(uri: str) -> dict[str, Any]:
+    """Return contents for a resource placeholder."""
+    resource = next((item for item in RESOURCES if item["uri"] == uri), None)
+    if not resource:
+        raise ValueError(f"Resource not found: {uri}")
+
+    return {
+        "contents": [
+            {
+                "uri": resource["uri"],
+                "mimeType": resource.get("mimeType") or "text/plain",
+                "text": f"TODO: return contents for {resource['name']} ({resource['uri']})",
+            }
+        ]
+    }
 
 
 @server.call_tool()
@@ -74,6 +207,35 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
 <% }); %>
         return [TextContent(type="text", text=f"<%= tool.name %> called with: {arguments}")]
 <% }); %>
+<% if (sampling && sampling.enabled) { %>
+
+    if name == "sample_text":
+        prompt = (arguments or {}).get("prompt", "")
+        if not prompt:
+            raise ValueError("prompt is required")
+
+        system_prompt = (arguments or {}).get("system_prompt") or <%- sampling.systemPrompt ? `"${sampling.systemPrompt.replace(/\"/g, '\\"')}"` : 'None' %>
+
+        try:
+            sampling_result = await server.create_message(  # type: ignore[attr-defined]
+                {
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": [{"type": "text", "text": prompt}],
+                        }
+                    ],
+                    "maxTokens": 400,
+                    **({"systemPrompt": system_prompt} if system_prompt else {}),
+                }
+            )
+            content = sampling_result.get("content")  # type: ignore[assignment]
+            if isinstance(content, list):
+                return content  # type: ignore[return-value]
+            return [content]  # type: ignore[return-value]
+        except Exception as exc:  # noqa: BLE001
+            return [TextContent(type="text", text=f"Sampling failed: {exc}")]
+<% } %>
 
     raise ValueError(f"Unknown tool: {name}")
 
