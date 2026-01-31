@@ -53,6 +53,16 @@ npm link
 
 ## Creating Your First Server
 
+### Web UI (Visual)
+
+Prefer a visual interface? Launch the web generator:
+
+```bash
+mcp-new web
+```
+
+Open `http://localhost:3100` in your browser and follow the wizard to configure your project, preview generated files, and download a `.tar.gz` archive. See [Web UI](./web-ui.md) for details.
+
 ### Interactive Mode
 
 Run without arguments to use the interactive wizard:

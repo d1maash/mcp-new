@@ -25,6 +25,30 @@ export async function listPresetsCommand(): Promise<void> {
       console.log(`      ${chalk.gray(tool.description)}`);
     }
     console.log();
+
+    if (preset.prompts?.length) {
+      console.log(chalk.white('  Prompts:'));
+      for (const prompt of preset.prompts) {
+        const argCount = prompt.arguments?.length ?? 0;
+        const argText =
+          argCount === 0
+            ? chalk.gray('no args')
+            : chalk.gray(`${argCount} arg${argCount > 1 ? 's' : ''}`);
+
+        console.log(`    ${chalk.cyan('•')} ${chalk.white(prompt.name)} ${argText}`);
+        if (prompt.description) {
+          console.log(`      ${chalk.gray(prompt.description)}`);
+        }
+      }
+      console.log();
+    }
+
+    if (preset.sampling?.enabled) {
+      console.log(chalk.white('  Sampling:'));
+      console.log(`    ${chalk.cyan('•')} sampling/createMessage helper enabled`);
+      console.log();
+    }
+
     console.log(chalk.gray('  ' + '─'.repeat(56)));
     console.log();
   }

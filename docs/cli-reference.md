@@ -405,6 +405,58 @@ mcp-new add-ci circleci
 
 ---
 
+## Web UI Commands
+
+### web
+
+Start a web-based project generator with a visual wizard UI.
+
+```bash
+mcp-new web [options]
+```
+
+#### Options
+
+| Option | Alias | Description |
+|--------|-------|-------------|
+| `--port <port>` | `-p` | Port to run the server on (default: 3100) |
+
+#### Features
+
+- **Multi-step wizard** — Project name, language, transport, tools, resources, presets
+- **Live preview** — View generated files with syntax highlighting before downloading
+- **Preset quick-fill** — Apply database, rest-api, or filesystem preset with one click
+- **Download** — Download generated project as a `.tar.gz` archive
+- **CLI command** — Copy equivalent `npx mcp-new` command for future use
+
+#### API Endpoints
+
+The web server exposes a REST API:
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/languages` | List supported languages |
+| GET | `/api/presets` | List presets with tools |
+| POST | `/api/validate` | Validate field values |
+| POST | `/api/preview` | Render templates in-memory |
+| POST | `/api/download` | Generate and download tar.gz |
+
+#### Examples
+
+```bash
+# Start web generator on default port (3100)
+mcp-new web
+
+# Start on custom port
+mcp-new web --port 8080
+```
+
+Then open `http://localhost:3100` in your browser.
+
+See [Web UI Documentation](./web-ui.md) for details.
+
+---
+
 ## Documentation Commands
 
 ### docs

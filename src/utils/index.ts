@@ -3,3 +3,4 @@ export * from './spinner.js';
 export * from './validator.js';
 export * from './file-system.js';
 export * from './git.js';
+export * from './project-info.js';

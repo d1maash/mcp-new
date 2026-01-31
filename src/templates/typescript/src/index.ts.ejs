@@ -9,7 +9,119 @@ import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
+  ListResourcesRequestSchema,
+  ReadResourceRequestSchema,
+  ListPromptsRequestSchema,
+  GetPromptRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
+
+type PromptTemplate = {
+  name: string;
+  description?: string;
+  arguments?: {
+    name: string;
+    description?: string;
+    required?: boolean;
+  }[];
+  messages: {
+    role: "user" | "assistant";
+    content: string;
+  }[];
+};
+
+const promptTemplates: PromptTemplate[] = [
+<% prompts.forEach(function(prompt, index) { %>
+  {
+    name: "<%= prompt.name %>",
+    description: "<%= prompt.description || '' %>",
+    arguments: [
+<% prompt.arguments.forEach(function(arg, argIndex) { %>
+      {
+        name: "<%= arg.name %>",
+        description: "<%= arg.description || '' %>",
+        required: <%= arg.required ? 'true' : 'false' %>,
+      }<%= argIndex < prompt.arguments.length - 1 ? ',' : '' %>
+<% }); %>
+    ],
+    messages: [
+<% prompt.messages.forEach(function(message, messageIndex) { %>
+      {
+        role: "<%= message.role %>",
+        content: "<%- message.content.replace(/\"/g, '\\"') %>",
+      }<%= messageIndex < prompt.messages.length - 1 ? ',' : '' %>
+<% }); %>
+    ],
+  }<%= index < prompts.length - 1 ? ',' : '' %>
+<% }); %>
+];
+
+const resources = [
+<% resources.forEach(function(resource, index) { %>
+  {
+    uri: "<%= resource.uri %>",
+    name: "<%= resource.name %>",
+    description: "<%= resource.description %>",
+    mimeType: "<%= resource.mimeType || '' %>" || undefined,
+  }<%= index < resources.length - 1 ? ',' : '' %>
+<% }); %>
+];
+
+const toolDefinitions = [
+<% if (includeExampleTool) { %>
+  {
+    name: "example_tool",
+    description: "An example tool that echoes the input",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description: "The query to echo",
+        },
+      },
+      required: ["query"],
+    },
+  },
+<% } %>
+<% tools.forEach(function(tool, index) { %>
+  {
+    name: "<%= tool.name %>",
+    description: "<%= tool.description %>",
+    inputSchema: {
+      type: "object",
+      properties: {
+<% tool.parameters.forEach(function(param, paramIndex) { %>
+        <%= param.name %>: {
+          type: "<%= param.type %>",
+          description: "<%= param.description %>",
+        }<%= paramIndex < tool.parameters.length - 1 ? ',' : '' %>
+<% }); %>
+      },
+      required: [<%- tool.parameters.filter(p => p.required).map(p => '"' + p.name + '"').join(', ') %>],
+    },
+  }<%= index < tools.length - 1 ? ',' : '' %>
+<% }); %>
+<% if (sampling?.enabled) { %>
+  {
+    name: "sample_text",
+    description: "Send a sampling request to the connected client LLM",
+    inputSchema: {
+      type: "object",
+      properties: {
+        prompt: {
+          type: "string",
+          description: "Prompt to send to the model",
+        },
+        system_prompt: {
+          type: "string",
+          description: "Optional system prompt override",
+        },
+      },
+      required: ["prompt"],
+    },
+  },
+<% } %>
+];
 
 const server = new Server(
   {
@@ -19,52 +131,84 @@ const server = new Server(
   {
     capabilities: {
       tools: {},
+<% if (resources.length > 0) { %>
+      resources: {},
+<% } %>
+<% if (prompts.length > 0) { %>
+      prompts: {},
+<% } %>
     },
   }
 );
 
-// Define available tools
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: [
-<% if (includeExampleTool) { %>
-    {
-      name: "example_tool",
-      description: "An example tool that echoes the input",
-      inputSchema: {
-        type: "object",
-        properties: {
-          query: {
-            type: "string",
-            description: "The query to echo",
-          },
-        },
-        required: ["query"],
-      },
-    },
-<% } %>
-<% tools.forEach(function(tool) { %>
-    {
-      name: "<%= tool.name %>",
-      description: "<%= tool.description %>",
-      inputSchema: {
-        type: "object",
-        properties: {
-<% tool.parameters.forEach(function(param, index) { %>
-          <%= param.name %>: {
-            type: "<%= param.type %>",
-            description: "<%= param.description %>",
-          }<%= index < tool.parameters.length - 1 ? ',' : '' %>
-<% }); %>
-        },
-        required: [<%- tool.parameters.filter(p => p.required).map(p => '"' + p.name + '"').join(', ') %>],
-      },
-    },
-<% }); %>
-  ],
+  tools: toolDefinitions,
 }));
 
+<% if (resources.length > 0) { %>
+server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+  resources,
+}));
+
+server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+  const resource = resources.find((item) => item.uri === request.params.uri);
+  if (!resource) {
+    throw new Error(`Resource not found: ${request.params.uri}`);
+  }
+
+  return {
+    contents: [
+      {
+        uri: resource.uri,
+        mimeType: resource.mimeType || "text/plain",
+        text: `TODO: return contents for ${resource.name} (${resource.uri})`,
+      },
+    ],
+  };
+});
+<% } %>
+
+<% if (prompts.length > 0) { %>
+function renderPromptTemplate(text: string, args: Record<string, unknown>): string {
+  return text.replace(/\{\{(.*?)\}\}/g, (_, key) => {
+    const value = args[key.trim()];
+    return value !== undefined ? String(value) : `{{${key.trim()}}}`;
+  });
+}
+
+server.setRequestHandler(ListPromptsRequestSchema, async () => ({
+  prompts: promptTemplates.map((prompt) => ({
+    name: prompt.name,
+    description: prompt.description,
+    arguments: prompt.arguments,
+  })),
+}));
+
+server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+  const prompt = promptTemplates.find((item) => item.name === request.params.name);
+  if (!prompt) {
+    throw new Error(`Prompt not found: ${request.params.name}`);
+  }
+
+  const args = request.params.arguments || {};
+
+  return {
+    description: prompt.description,
+    messages: prompt.messages.map((message) => ({
+      role: message.role,
+      content: [
+        {
+          type: "text",
+          text: renderPromptTemplate(message.content, args),
+        },
+      ],
+    })),
+  };
+});
+<% } %>
+
 // Handle tool calls
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
+server.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
   const { name, arguments: args } = request.params;
 
 <% if (includeExampleTool) { %>
@@ -98,6 +242,42 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     };
   }
 <% }); %>
+<% if (sampling?.enabled) { %>
+
+  if (name === "sample_text") {
+    const prompt = (args?.prompt as string) || "";
+    if (!prompt) {
+      throw new Error("prompt is required");
+    }
+
+    const systemPrompt =
+      (args?.system_prompt as string | undefined) ||
+      <%- sampling.systemPrompt ? `"${sampling.systemPrompt.replace(/\"/g, '\\"')}"` : 'undefined' %>;
+
+    const response = await server.createMessage(
+      {
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: prompt,
+              },
+            ],
+          },
+        ],
+        maxTokens: 400,
+        ...(systemPrompt ? { systemPrompt } : undefined),
+      },
+      extra?.sessionId ? { sessionId: extra.sessionId } : undefined
+    );
+
+    return {
+      content: Array.isArray(response.content) ? response.content : [response.content],
+    };
+  }
+<% } %>
 
   throw new Error(`Unknown tool: ${name}`);
 });
@@ -109,7 +289,8 @@ async function main() {
   await server.connect(transport);
   console.error("<%= name %> MCP server running on stdio");
 <% } else { %>
-  const transport = new SSEServerTransport("/messages", response);
+  // TODO: Replace with a real ServerResponse when wiring SSE transport into your HTTP server
+  const transport = new SSEServerTransport("/messages", {} as any);
   await server.connect(transport);
   console.error("<%= name %> MCP server running on SSE");
 <% } %>

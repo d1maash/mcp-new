@@ -89,4 +89,30 @@ export const DATABASE_PRESET = {
       parameters: [],
     },
   ] as ToolConfig[],
+  prompts: [
+    {
+      name: 'write_sql',
+      description: 'Generate a SQL query from a natural language request',
+      arguments: [
+        {
+          name: 'request',
+          description: 'Business question or request',
+          required: true,
+        },
+        {
+          name: 'dialect',
+          description: 'Optional SQL dialect (e.g., postgres, mysql)',
+          required: false,
+        },
+      ],
+      messages: [
+        {
+          role: 'user',
+          content:
+            'Write a SQL query that answers: "{{request}}". Use the {{dialect}} dialect if provided.',
+        },
+      ],
+    },
+  ],
+  sampling: { enabled: true },
 };

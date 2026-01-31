@@ -62,6 +62,33 @@ export const ResourceConfigSchema = z.object({
 });
 export type ResourceConfig = z.infer<typeof ResourceConfigSchema>;
 
+export const PromptArgumentSchema = z.object({
+  name: z.string(),
+  description: z.string().default(''),
+  required: z.boolean().default(true),
+});
+export type PromptArgumentConfig = z.infer<typeof PromptArgumentSchema>;
+
+export const PromptMessageSchema = z.object({
+  role: z.enum(['user', 'assistant']),
+  content: z.string(),
+});
+export type PromptMessageConfig = z.infer<typeof PromptMessageSchema>;
+
+export const PromptConfigSchema = z.object({
+  name: z.string(),
+  description: z.string().default(''),
+  arguments: z.array(PromptArgumentSchema).default([]),
+  messages: z.array(PromptMessageSchema).default([]),
+});
+export type PromptConfig = z.infer<typeof PromptConfigSchema>;
+
+export const SamplingConfigSchema = z.object({
+  enabled: z.boolean().default(false),
+  systemPrompt: z.string().optional(),
+});
+export type SamplingConfig = z.infer<typeof SamplingConfigSchema>;
+
 export const ProjectConfigSchema = z.object({
   name: z.string().min(1, 'Project name is required'),
   description: z.string().default(''),
@@ -69,6 +96,8 @@ export const ProjectConfigSchema = z.object({
   transport: TransportSchema,
   tools: z.array(ToolConfigSchema).default([]),
   resources: z.array(ResourceConfigSchema).default([]),
+  prompts: z.array(PromptConfigSchema).default([]),
+  sampling: SamplingConfigSchema.default({ enabled: false }),
   includeExampleTool: z.boolean().default(true),
   skipInstall: z.boolean().default(false),
   initGit: z.boolean().default(true),

@@ -63,6 +63,8 @@ export abstract class BaseGenerator {
       transport: this.config.transport,
       tools: this.config.tools,
       resources: this.config.resources,
+      prompts: this.config.prompts,
+      sampling: this.config.sampling,
       includeExampleTool: this.config.includeExampleTool,
       javaBuildTool: this.config.javaBuildTool,
       // Helper for Java/Elixir package name (lowercase, no special chars)

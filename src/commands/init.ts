@@ -93,6 +93,8 @@ export async function initCommand(options: InitOptions): Promise<void> {
       transport,
       tools: [],
       resources: [],
+      prompts: [],
+      sampling: { enabled: true },
       includeExampleTool,
       skipInstall: options.skipInstall || false,
       initGit: false, // Don't init git in existing project

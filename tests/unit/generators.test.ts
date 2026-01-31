@@ -28,6 +28,8 @@ describe('WizardGenerator', () => {
       transport: 'stdio',
       tools: [],
       resources: [],
+      prompts: [],
+      sampling: { enabled: true },
       includeExampleTool: true,
       skipInstall: true,
       initGit: false,
@@ -61,6 +63,8 @@ describe('WizardGenerator', () => {
       transport: 'stdio',
       tools: [],
       resources: [],
+      prompts: [],
+      sampling: { enabled: true },
       includeExampleTool: true,
       skipInstall: true,
       initGit: false,
@@ -98,6 +102,8 @@ describe('WizardGenerator', () => {
         },
       ],
       resources: [],
+      prompts: [],
+      sampling: { enabled: true },
       includeExampleTool: false,
       skipInstall: true,
       initGit: false,
@@ -111,5 +117,36 @@ describe('WizardGenerator', () => {
     expect(indexContent).toContain('Get weather for a location');
     expect(indexContent).toContain('city');
     expect(indexContent).not.toContain('example_tool');
+  });
+
+  it('should generate prompts and sampling helper', async () => {
+    const config: ProjectConfig = {
+      name: 'prompts-server',
+      description: '',
+      language: 'typescript',
+      transport: 'stdio',
+      tools: [],
+      resources: [],
+      prompts: [
+        {
+          name: 'draft_reply',
+          description: 'Draft a reply',
+          arguments: [{ name: 'topic', description: 'Topic to cover', required: true }],
+          messages: [{ role: 'user', content: 'Write about {{topic}}' }],
+        },
+      ],
+      sampling: { enabled: true },
+      includeExampleTool: false,
+      skipInstall: true,
+      initGit: false,
+    };
+
+    const outputPath = join(testDir, config.name);
+    await generateFromWizard(config, outputPath);
+
+    const indexContent = await readFile(join(outputPath, 'src', 'index.ts'), 'utf-8');
+    expect(indexContent).toContain('draft_reply');
+    expect(indexContent).toContain('ListPromptsRequestSchema');
+    expect(indexContent).toContain('sample_text');
   });
 });

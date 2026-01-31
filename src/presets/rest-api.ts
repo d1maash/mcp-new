@@ -108,4 +108,35 @@ export const REST_API_PRESET = {
       ],
     },
   ] as ToolConfig[],
+  prompts: [
+    {
+      name: 'draft_api_request',
+      description: 'Generate an HTTP request plan with headers and body suggestions',
+      arguments: [
+        {
+          name: 'goal',
+          description: 'What the request should achieve',
+          required: true,
+        },
+        {
+          name: 'method',
+          description: 'HTTP method to use',
+          required: false,
+        },
+        {
+          name: 'path',
+          description: 'Endpoint path or URL',
+          required: false,
+        },
+      ],
+      messages: [
+        {
+          role: 'user',
+          content:
+            'Create an HTTP request plan for "{{goal}}". Prefer method {{method}} and path {{path}} when provided. Include headers/body suggestions.',
+        },
+      ],
+    },
+  ],
+  sampling: { enabled: true },
 };

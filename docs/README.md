@@ -15,6 +15,7 @@ Welcome to the mcp-new documentation! This guide will help you create MCP server
 | [AI Generation](./ai-generation.md) | Create tools using Claude |
 | [CI/CD](./ci-cd.md) | CI/CD pipeline configuration |
 | [Plugins](./plugins.md) | Language template plugins |
+| [Web UI](./web-ui.md) | Visual project generator in the browser |
 | [Contributing](./contributing.md) | How to contribute to mcp-new |
 
 ## 🚀 Quick Links
@@ -24,6 +25,7 @@ Welcome to the mcp-new documentation! This guide will help you create MCP server
 - **Want pre-built tools?** Check out [Presets](./presets.md)
 - **Have an OpenAPI spec?** See [OpenAPI Integration](./openapi.md)
 - **Need CI/CD?** See [CI/CD Configuration](./ci-cd.md)
+- **Prefer a visual UI?** Try [Web UI](./web-ui.md)
 - **Need CLI help?** View [CLI Reference](./cli-reference.md)
 
 ## 🛠 Utility Commands
@@ -38,6 +40,7 @@ Welcome to the mcp-new documentation! This guide will help you create MCP server
 | `mcp-new monorepo add` | Add a server to the workspace |
 | `mcp-new monorepo list` | List all servers in the workspace |
 | `mcp-new add-ci` | Add CI/CD configuration to project |
+| `mcp-new web` | Start web-based project generator UI |
 | `mcp-new docs` | Start interactive documentation server |
 | `mcp-new preset-cache` | Manage external preset cache |
 
