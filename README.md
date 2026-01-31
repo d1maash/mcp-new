@@ -47,6 +47,7 @@ mcp-new my-server
 | 📄 **OpenAPI Import** | Auto-generate tools from OpenAPI/Swagger specs |
 | 🤖 **AI Generation** | Create tools from natural language using Claude |
 | 🌐 **Web UI** | Visual project generator at `mcp-new web` |
+| 🔄 **Dev Mode** | Hot reload with MCP Inspector via `mcp-new dev` |
 | 📚 **Rich Documentation** | Generated README with examples and Claude Desktop config |
 
 ---
@@ -65,7 +66,7 @@ mcp-new my-project --preset <name> -y
 | `rest-api` | HTTP client wrapper | `http_get` `http_post` `http_put` `http_delete` `set_base_url` |
 | `filesystem` | File system operations | `read_file` `write_file` `list_directory` `search_files` `file_info` |
 
-Each preset also ships with prompt templates and enables the sampling helper tool so you can request model output from within your server.
+Each preset also ships with **prompt templates** and enables the **sampling** helper tool (`sampling/createMessage`) so your server can request LLM completions from the client.
 
 <details>
 <summary>📋 Example: Database preset</summary>

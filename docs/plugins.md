@@ -120,7 +120,10 @@ $server->run();
 | `transport` | string | Transport type (stdio/sse) |
 | `tools` | array | Array of tool configurations |
 | `resources` | array | Array of resource configurations |
+| `prompts` | array | Array of prompt template configurations |
+| `sampling` | object | Sampling config (`{ enabled, systemPrompt? }`) |
 | `includeExampleTool` | boolean | Whether to include example tool |
+| `javaBuildTool` | string | `"maven"` or `"gradle"` (Java/Kotlin only) |
 | `packageName` | string | Sanitized package name (lowercase) |
 | `namespace` | string | PascalCase namespace |
 

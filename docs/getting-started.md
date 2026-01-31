@@ -75,11 +75,13 @@ You'll be prompted for:
 
 1. **Project name** — Name of your MCP server
 2. **Description** — Optional description
-3. **Language** — TypeScript, Python, Go, or Rust
+3. **Language** — TypeScript, Python, Go, Rust, Java, Kotlin, C#, or Elixir
 4. **Transport** — stdio or SSE
 5. **Include example tool** — Yes/No
 6. **Add custom tools** — Define your own tools
 7. **Add resources** — Define MCP resources
+8. **Add prompt templates** — Define MCP prompts with arguments and messages
+9. **Enable sampling** — Allow server-to-client LLM requests via `sampling/createMessage`
 
 ### Quick Mode
 
@@ -218,6 +220,17 @@ cd my-server
 cargo build --release
 cargo run
 ```
+
+## Dev Mode
+
+Use `mcp-new dev` for development with hot reload and MCP Inspector:
+
+```bash
+cd my-server
+mcp-new dev
+```
+
+This automatically detects your project language, starts the build watcher, and launches MCP Inspector. See [CLI Reference](./cli-reference.md#dev) for all options.
 
 ## Testing with MCP Inspector
 

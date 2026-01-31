@@ -40,6 +40,7 @@ Welcome to the mcp-new documentation! This guide will help you create MCP server
 | `mcp-new monorepo add` | Add a server to the workspace |
 | `mcp-new monorepo list` | List all servers in the workspace |
 | `mcp-new add-ci` | Add CI/CD configuration to project |
+| `mcp-new dev` | Run server in dev mode with hot reload and inspector |
 | `mcp-new web` | Start web-based project generator UI |
 | `mcp-new docs` | Start interactive documentation server |
 | `mcp-new preset-cache` | Manage external preset cache |
