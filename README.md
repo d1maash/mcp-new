@@ -46,6 +46,7 @@ mcp-new my-server
 | 🗂️ **Monorepo Support** | Manage multiple MCP servers in one workspace |
 | 📄 **OpenAPI Import** | Auto-generate tools from OpenAPI/Swagger specs |
 | 🤖 **AI Generation** | Create tools from natural language using Claude |
+| 🌐 **Web UI** | Visual project generator at `mcp-new web` |
 | 📚 **Rich Documentation** | Generated README with examples and Claude Desktop config |
 
 ---
@@ -141,6 +142,20 @@ mcp-new monorepo add data-service -p
 mcp-new monorepo list
 ```
 
+### Web UI
+
+Launch a visual project generator in your browser:
+
+```bash
+# Start the web generator
+mcp-new web
+
+# Custom port
+mcp-new web --port 8080
+```
+
+The web UI provides a multi-step wizard for configuring project name, language, transport, tools, resources, and presets — with live file preview and tar.gz download.
+
 ### Additional Commands
 
 ```bash
@@ -199,6 +214,7 @@ Commands:
   init                   Initialize in current directory
   add-tool               Add tool to existing project
   list-presets           List all available preset templates
+  web                    Start web-based project generator UI
   dev                    Run dev mode with hot reload and inspector
   validate               Validate current MCP server project
   upgrade                Upgrade MCP SDK to latest version
@@ -323,6 +339,7 @@ For detailed documentation, see the [docs](./docs) folder:
 | [Templates](./docs/templates.md) | Language-specific guides |
 | [OpenAPI Integration](./docs/openapi.md) | Generate from specs |
 | [AI Generation](./docs/ai-generation.md) | Create with Claude |
+| [Web UI](./docs/web-ui.md) | Visual project generator |
 | [Contributing](./docs/contributing.md) | How to contribute |
 
 ## 🔗 Resources
