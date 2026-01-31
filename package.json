@@ -1,6 +1,6 @@
 {
     "name": "mcp-new",
-    "version": "1.7.0",
+    "version": "1.7.1",
     "description": "CLI generator for MCP servers. Like create-react-app, but for MCP.",
     "type": "module",
     "main": "./dist/index.js",
