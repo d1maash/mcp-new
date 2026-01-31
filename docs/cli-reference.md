@@ -457,6 +457,68 @@ See [Web UI Documentation](./web-ui.md) for details.
 
 ---
 
+## Dev Mode Commands
+
+### dev
+
+Run your MCP server in development mode with hot reload, automatic builds, and optional MCP Inspector integration.
+
+```bash
+mcp-new dev [options]
+```
+
+#### Options
+
+| Option | Description |
+|--------|-------------|
+| `--project <path>` | Project directory (default: current directory) |
+| `--cmd <command>` | Override run command |
+| `--build <command>` | Override build command |
+| `--watch <paths>` | Comma-separated list of paths to watch for reloads |
+| `--no-inspector` | Skip launching MCP Inspector (run raw server only) |
+
+#### Features
+
+- **Auto-detection** — Automatically detects project language, build command, and run command from project files (package.json, pyproject.toml, go.mod, Cargo.toml, pom.xml, build.gradle, .csproj, mix.exs)
+- **Hot reload** — Watches source files and restarts the server on changes
+- **MCP Inspector** — Launches `@modelcontextprotocol/inspector` by default for interactive testing
+- **Custom commands** — Override detected build/run commands with `--cmd` and `--build`
+
+#### Supported Languages
+
+| Language | Build Command | Run Command |
+|----------|---------------|-------------|
+| TypeScript | `npm run build` | `npm start` or `node dist/index.js` |
+| Python | — | `python -m src.server` |
+| Go | `go build ./...` | `go run ./cmd/server` |
+| Rust | `cargo build` | `cargo run` |
+| Java (Maven) | `mvn compile` | `mvn exec:java` |
+| Java/Kotlin (Gradle) | `./gradlew build` | `./gradlew run` |
+| C# | `dotnet build` | `dotnet run` |
+| Elixir | `mix compile` | `mix run --no-halt` |
+
+#### Examples
+
+```bash
+# Dev mode for current project
+cd my-server
+mcp-new dev
+
+# Dev mode for a specific directory
+mcp-new dev --project ./packages/api-server
+
+# Custom run and build commands
+mcp-new dev --cmd "npm start" --build "npm run build"
+
+# Disable inspector (run raw server)
+mcp-new dev --no-inspector
+
+# Watch specific paths
+mcp-new dev --watch "src,lib"
+```
+
+---
+
 ## Documentation Commands
 
 ### docs

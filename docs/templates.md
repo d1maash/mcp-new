@@ -1,6 +1,6 @@
 # Templates
 
-mcp-new supports four programming languages, each with its own project template and SDK.
+mcp-new supports eight programming languages, each with its own project template and SDK.
 
 ## Supported Languages
 
@@ -10,6 +10,10 @@ mcp-new supports four programming languages, each with its own project template 
 | Python | [mcp](https://github.com/modelcontextprotocol/python-sdk) | stdio, SSE |
 | Go | [mcp-go](https://github.com/mark3labs/mcp-go) | stdio, SSE |
 | Rust | [rmcp](https://github.com/modelcontextprotocol/rust-sdk) | stdio, SSE |
+| Java | [mcp-java-sdk](https://github.com/modelcontextprotocol/java-sdk) | stdio, SSE |
+| Kotlin | [mcp-java-sdk](https://github.com/modelcontextprotocol/java-sdk) | stdio, SSE |
+| C# | [mcp-dotnet](https://github.com/modelcontextprotocol/dotnet-sdk) | stdio, SSE |
+| Elixir | [mcp-ex](https://github.com/modelcontextprotocol/elixir-sdk) | stdio, SSE |
 
 ---
 
@@ -290,6 +294,135 @@ async fn my_tool_handler(args: serde_json::Value) -> Result<String, String> {
     let input = args["input"].as_str().unwrap_or("");
     Ok(format!("Processed: {}", input))
 }
+```
+
+---
+
+## Java Template
+
+### Project Structure (Maven)
+
+```
+my-server/
+├── src/
+│   └── main/
+│       └── java/
+│           └── com/example/mcp/
+│               └── McpServer.java
+├── pom.xml
+├── README.md
+├── .gitignore
+└── .env.example
+```
+
+### Project Structure (Gradle)
+
+```
+my-server/
+├── src/
+│   └── main/
+│       └── java/
+│           └── com/example/mcp/
+│               └── McpServer.java
+├── build.gradle
+├── settings.gradle
+├── gradlew / gradlew.bat
+├── README.md
+├── .gitignore
+└── .env.example
+```
+
+### Running
+
+```bash
+# Maven
+cd my-server
+mvn install
+mvn exec:java -Dexec.mainClass="com.example.mcp.McpServer"
+
+# Gradle
+cd my-server
+./gradlew build
+./gradlew run
+```
+
+---
+
+## Kotlin Template
+
+### Project Structure (Gradle)
+
+```
+my-server/
+├── src/
+│   └── main/
+│       └── kotlin/
+│           └── com/example/mcp/
+│               └── McpServer.kt
+├── build.gradle.kts
+├── settings.gradle.kts
+├── gradlew / gradlew.bat
+├── README.md
+├── .gitignore
+└── .env.example
+```
+
+### Running
+
+```bash
+cd my-server
+./gradlew build
+./gradlew run
+```
+
+---
+
+## C# Template
+
+### Project Structure
+
+```
+my-server/
+├── src/
+│   └── Program.cs
+├── MyServer.csproj
+├── README.md
+├── .gitignore
+└── .env.example
+```
+
+### Running
+
+```bash
+cd my-server
+dotnet restore
+dotnet run
+```
+
+---
+
+## Elixir Template
+
+### Project Structure
+
+```
+my-server/
+├── lib/
+│   ├── my_server.ex
+│   └── my_server/
+│       └── server.ex
+├── mix.exs
+├── README.md
+├── .gitignore
+└── .env.example
+```
+
+### Running
+
+```bash
+cd my-server
+mix deps.get
+mix run --no-halt
 ```
 
 ---

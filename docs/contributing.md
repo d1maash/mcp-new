@@ -54,7 +54,10 @@ mcp-new/
 │   ├── commands/           # Command implementations
 │   │   ├── create.ts
 │   │   ├── init.ts
-│   │   └── add-tool.ts
+│   │   ├── add-tool.ts
+│   │   ├── dev.ts          # Dev mode with hot reload
+│   │   ├── web.ts          # Web UI generator
+│   │   └── docs.ts         # Documentation server
 │   ├── generators/         # Project generators
 │   │   ├── base.ts
 │   │   ├── from-wizard.ts
@@ -66,13 +69,25 @@ mcp-new/
 │   │   ├── rest-api.ts
 │   │   └── filesystem.ts
 │   ├── prompts/            # Interactive prompts
+│   │   ├── prompt-templates.ts  # MCP prompt wizard
+│   │   └── sampling.ts         # Sampling config wizard
+│   ├── web-server/         # Web UI server
+│   │   ├── server.ts
+│   │   ├── api.ts
+│   │   ├── bundler.ts
+│   │   └── html.ts
+│   ├── docs-server/        # Documentation server
 │   ├── types/              # TypeScript types
 │   └── utils/              # Utility functions
 ├── templates/              # Project templates
 │   ├── typescript/
 │   ├── python/
 │   ├── go/
-│   └── rust/
+│   ├── rust/
+│   ├── java/
+│   ├── kotlin/
+│   ├── csharp/
+│   └── elixir/
 ├── docs/                   # Documentation
 └── tests/                  # Test files
 ```
@@ -170,6 +185,19 @@ export const MY_PRESET = {
       ],
     },
   ] as ToolConfig[],
+  prompts: [
+    {
+      name: 'my_prompt',
+      description: 'Generate something useful',
+      arguments: [
+        { name: 'request', description: 'What to generate', required: true },
+      ],
+      messages: [
+        { role: 'user', content: 'Generate: {{request}}' },
+      ],
+    },
+  ],
+  sampling: { enabled: true },
 };
 ```
 

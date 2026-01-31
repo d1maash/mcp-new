@@ -1,6 +1,6 @@
 # Presets
 
-Presets are pre-configured project templates that come with ready-to-use tool definitions. They help you get started quickly without manually defining each tool.
+Presets are pre-configured project templates that come with ready-to-use tool definitions, prompt templates, and sampling configuration. They help you get started quickly without manually defining each tool.
 
 ## Available Presets
 
@@ -124,6 +124,26 @@ List all tables in the database.
 }
 ```
 
+### Included Prompts
+
+| Prompt | Description | Arguments |
+|--------|-------------|-----------|
+| `write_sql` | Generate a SQL query from natural language | `request` (required), `dialect` (optional) |
+
+```json
+{
+  "name": "write_sql",
+  "arguments": {
+    "request": "Find all users who signed up in the last 30 days",
+    "dialect": "postgres"
+  }
+}
+```
+
+### Sampling
+
+The database preset enables **sampling** (`sampling/createMessage`), allowing the server to request LLM completions from the client for tasks like query generation.
+
 ---
 
 ## REST API Preset
@@ -224,6 +244,27 @@ Set the base URL for all subsequent requests.
 }
 ```
 
+### Included Prompts
+
+| Prompt | Description | Arguments |
+|--------|-------------|-----------|
+| `draft_api_request` | Generate an HTTP request plan with headers and body | `goal` (required), `method` (optional), `path` (optional) |
+
+```json
+{
+  "name": "draft_api_request",
+  "arguments": {
+    "goal": "Create a new user account",
+    "method": "POST",
+    "path": "/users"
+  }
+}
+```
+
+### Sampling
+
+The REST API preset enables **sampling**, allowing the server to request LLM completions for tasks like generating request plans.
+
 ---
 
 ## Filesystem Preset
@@ -312,6 +353,26 @@ Get information about a file or directory.
   }
 }
 ```
+
+### Included Prompts
+
+| Prompt | Description | Arguments |
+|--------|-------------|-----------|
+| `summarize_file` | Ask the model to summarize or inspect a file | `goal` (required), `path` (optional) |
+
+```json
+{
+  "name": "summarize_file",
+  "arguments": {
+    "goal": "Explain what this configuration does",
+    "path": "/etc/nginx/nginx.conf"
+  }
+}
+```
+
+### Sampling
+
+The filesystem preset enables **sampling**, allowing the server to request LLM completions for file summarization and analysis.
 
 ---
 
@@ -411,6 +472,20 @@ my-preset/
       ]
     }
   ],
+  "resources": [],
+  "prompts": [
+    {
+      "name": "my_prompt",
+      "description": "Generate something from natural language",
+      "arguments": [
+        { "name": "request", "description": "What to generate", "required": true }
+      ],
+      "messages": [
+        { "role": "user", "content": "Generate: {{request}}" }
+      ]
+    }
+  ],
+  "sampling": { "enabled": true },
   "author": "Your Name",
   "repository": "https://github.com/user/repo"
 }
