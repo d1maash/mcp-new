@@ -8,6 +8,7 @@ Welcome to the mcp-new documentation! This guide will help you create MCP server
 |----------|-------------|
 | [Getting Started](./getting-started.md) | Installation and first steps |
 | [CLI Reference](./cli-reference.md) | Complete command-line reference |
+| [Architecture](./architecture.md) | System overview and internals |
 | [Monorepo](./monorepo.md) | Manage multiple MCP servers |
 | [Presets](./presets.md) | Pre-configured project templates |
 | [Templates](./templates.md) | Language-specific templates guide |
@@ -22,6 +23,7 @@ Welcome to the mcp-new documentation! This guide will help you create MCP server
 
 - **New to MCP?** Start with [Getting Started](./getting-started.md)
 - **Multiple servers?** Check out [Monorepo](./monorepo.md)
+- **How it works?** See [Architecture](./architecture.md)
 - **Want pre-built tools?** Check out [Presets](./presets.md)
 - **Have an OpenAPI spec?** See [OpenAPI Integration](./openapi.md)
 - **Need CI/CD?** See [CI/CD Configuration](./ci-cd.md)

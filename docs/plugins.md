@@ -1,56 +1,44 @@
-# Language Plugins
+# Plugin API (Language Templates)
 
-mcp-new supports extending language support through plugins. This allows the community to add support for additional programming languages.
+Language plugins let you add new template sets without changing the core CLI. A plugin is just an npm package that ships an `mcp-plugin.json` manifest and a `templates/` directory.
 
-## Using Plugins
+## How Plugins Are Discovered
 
-### Installing a Plugin
+At startup, mcp-new searches for packages named `@mcp-new/template-*` in:
 
-Plugins are distributed as npm packages with the naming convention `@mcp-new/template-{language}`:
+| Location | Notes |
+|----------|------|
+| Global node_modules | `/usr/local/lib/node_modules` on Unix |
+| Local node_modules | `./node_modules` in the current working directory |
+| CLI-relative | `node_modules` next to the mcp-new package |
 
-```bash
-npm install -g @mcp-new/template-php
-npm install -g @mcp-new/template-ruby
-```
+Discovery logic lives in `src/plugins/discovery.ts`.
 
-### Using Plugin Languages
+## How To Use A Plugin
 
-Once installed, plugin languages appear automatically in the language selection:
+1. Install your plugin package.
+2. Run `mcp-new my-server`.
+3. Pick the plugin language in the interactive language list.
 
-```bash
-mcp-new my-server
-# Select language:
-#   TypeScript
-#   Python
-#   Go
-#   ...
-#   ── Plugins ──
-#   PHP (plugin)
-#   Ruby (plugin)
-```
+Important: plugin languages are currently selectable **only in the interactive wizard**. There is no dynamic CLI flag (like `--php`) yet.
 
-Or use directly if you know the language ID:
-
-```bash
-mcp-new my-server --php
-```
-
-## Creating a Plugin
-
-### Plugin Structure
+## Plugin Package Layout
 
 ```
-@mcp-new/template-php/
+mcp-new-template-php/
 ├── package.json
-├── mcp-plugin.json          # Plugin manifest
+├── mcp-plugin.json
 └── templates/
-    ├── composer.json.ejs
-    ├── src/
-    │   └── server.php.ejs
-    └── ...
+    ├── README.md.ejs
+    └── src/
+        └── server.php.ejs
 ```
 
-### Plugin Manifest (mcp-plugin.json)
+Any file ending in `.ejs` is rendered with template data. All other files are copied as-is.
+
+## Manifest: mcp-plugin.json
+
+The manifest is validated with `LanguagePluginManifestSchema` from `src/types/plugin.ts`.
 
 ```json
 {
@@ -59,133 +47,114 @@ mcp-new my-server --php
   "templateDir": "templates",
   "installCommand": "composer install",
   "runCommand": "php src/server.php",
-  "buildCommand": null,
   "fileExtension": ".php"
 }
 ```
 
 ### Manifest Fields
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `languageId` | string | Yes | Unique identifier (used as CLI flag) |
-| `languageDisplayName` | string | Yes | Display name in prompts |
-| `templateDir` | string | No | Template directory (default: "templates") |
-| `installCommand` | string | No | Dependency install command |
-| `runCommand` | string | No | Command to run the server |
-| `buildCommand` | string | No | Build command (if applicable) |
-| `fileExtension` | string | No | Main file extension |
+| Field | Type | Required | Used For |
+|-------|------|----------|----------|
+| `languageId` | string | Yes | Internal id and selection key |
+| `languageDisplayName` | string | Yes | Name shown in the wizard |
+| `templateDir` | string | No | Template directory, default `templates` |
+| `installCommand` | string | No | Used by generator to install deps |
+| `runCommand` | string | No | Printed in “Next steps” |
+| `buildCommand` | string | No | Reserved for future use |
+| `fileExtension` | string | No | Informational metadata |
 
-### Template Files
+Note: optional fields should be **omitted** if not used. `null` values are not valid.
 
-Templates use EJS syntax and receive the same data as built-in templates:
+## Template Data
 
-```php
-// templates/src/server.php.ejs
-<?php
-/**
- * <%= name %> MCP Server
- * <%= description %>
- */
-
-require_once __DIR__ . '/../vendor/autoload.php';
-
-use MCP\Server;
-use MCP\Tool;
-
-$server = new Server('<%= name %>');
-
-<% for (const tool of tools) { %>
-$server->addTool(new Tool(
-    '<%= tool.name %>',
-    '<%= tool.description %>',
-    function($params) {
-        // TODO: Implement <%= tool.name %>
-        return ['result' => 'success'];
-    }
-));
-
-<% } %>
-
-$server->run();
-```
-
-### Available Template Data
+Templates receive the same data as built-in languages.
 
 | Variable | Type | Description |
 |----------|------|-------------|
 | `name` | string | Project name |
 | `description` | string | Project description |
-| `language` | string | Language ID |
-| `transport` | string | Transport type (stdio/sse) |
-| `tools` | array | Array of tool configurations |
-| `resources` | array | Array of resource configurations |
-| `prompts` | array | Array of prompt template configurations |
-| `sampling` | object | Sampling config (`{ enabled, systemPrompt? }`) |
+| `language` | string | Language id |
+| `transport` | string | `stdio` or `sse` |
+| `tools` | array | Tool configs |
+| `resources` | array | Resource configs |
+| `prompts` | array | Prompt configs |
+| `sampling` | object | Sampling config |
 | `includeExampleTool` | boolean | Whether to include example tool |
-| `javaBuildTool` | string | `"maven"` or `"gradle"` (Java/Kotlin only) |
-| `packageName` | string | Sanitized package name (lowercase) |
-| `namespace` | string | PascalCase namespace |
+| `javaBuildTool` | string | `maven` or `gradle` |
+| `packageName` | string | Sanitized lowercase name |
+| `namespace` | string | PascalCase name |
 
-### Publishing
+## Minimal Example Plugin
 
-1. Create package.json with scope `@mcp-new`:
+### package.json
 
 ```json
 {
-  "name": "@mcp-new/template-php",
-  "version": "1.0.0",
-  "description": "PHP template for mcp-new",
+  "name": "@mcp-new/template-php-minimal",
+  "version": "0.1.0",
+  "description": "Minimal PHP template for mcp-new",
   "files": [
     "mcp-plugin.json",
     "templates"
-  ]
+  ],
+  "license": "MIT"
 }
 ```
 
-2. Publish to npm:
+### mcp-plugin.json
+
+```json
+{
+  "languageId": "php",
+  "languageDisplayName": "PHP",
+  "templateDir": "templates",
+  "runCommand": "php src/server.php"
+}
+```
+
+### templates/src/server.php.ejs
+
+```php
+<?php
+// <%= name %> MCP Server (minimal)
+// <%= description %>
+
+echo "TODO: implement MCP server for <%= name %>\\n";
+
+// Tools:
+<% for (const tool of tools) { %>
+// - <%= tool.name %>: <%= tool.description %>
+<% } %>
+```
+
+You can add a `README.md.ejs`, dependencies (for example `composer.json.ejs`), and any other files you want to ship in the template.
+
+## Publishing
+
+1. Make sure the package name follows `@mcp-new/template-*`.
+2. Publish to npm.
+3. Install globally or add to your project’s `node_modules`.
 
 ```bash
 npm publish --access public
 ```
 
-## Plugin Discovery
+## Local Testing
 
-Plugins are discovered automatically from:
+Option A: Global install.
 
-1. Global npm modules (`/usr/local/lib/node_modules`)
-2. Local `node_modules` in current directory
-3. `node_modules` relative to mcp-new installation
-
-Plugins must be named `@mcp-new/template-*` to be discovered.
-
-## Example Plugins
-
-### PHP Plugin
-
-```
-@mcp-new/template-php/
-├── package.json
-├── mcp-plugin.json
-└── templates/
-    ├── composer.json.ejs
-    ├── src/
-    │   └── server.php.ejs
-    └── README.md.ejs
+```bash
+npm install -g @mcp-new/template-php-minimal
 ```
 
-### Ruby Plugin
+Option B: Link from a local plugin repo.
 
+```bash
+npm link
+npm link @mcp-new/template-php-minimal
 ```
-@mcp-new/template-ruby/
-├── package.json
-├── mcp-plugin.json
-└── templates/
-    ├── Gemfile.ejs
-    ├── lib/
-    │   └── server.rb.ejs
-    └── README.md.ejs
-```
+
+Then run `mcp-new my-server` and select the plugin language.
 
 ---
 
