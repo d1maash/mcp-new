@@ -1,4 +1,5 @@
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { exists, readFile } from '../utils/file-system.js';
 import {
   LanguagePluginManifestSchema,
@@ -7,6 +8,9 @@ import {
   type LoadedPlugin,
   type LanguagePluginManifest,
 } from '../types/plugin.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * Discover installed language plugins in node_modules.
@@ -22,7 +26,7 @@ export async function discoverPlugins(): Promise<LoadedPlugin[]> {
     // Local node_modules
     path.join(process.cwd(), 'node_modules'),
     // Relative to this package
-    path.join(import.meta.dirname, '..', '..', 'node_modules'),
+    path.join(__dirname, '..', '..', 'node_modules'),
   ];
 
   for (const searchPath of searchPaths) {

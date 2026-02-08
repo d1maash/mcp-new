@@ -1,6 +1,10 @@
 import fs from 'fs-extra';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import ejs from 'ejs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export async function ensureDir(dirPath: string): Promise<void> {
   await fs.ensureDir(dirPath);
@@ -84,8 +88,8 @@ export async function walkDir(
 export function getTemplateDir(): string {
   // In development: src/templates
   // In production (dist): ../templates (relative to dist/)
-  const devPath = path.join(import.meta.dirname, '..', 'templates');
-  const prodPath = path.join(import.meta.dirname, '..', '..', 'templates');
+  const devPath = path.join(__dirname, '..', 'templates');
+  const prodPath = path.join(__dirname, '..', '..', 'templates');
 
   // Check which path exists
   if (fs.existsSync(devPath)) {
