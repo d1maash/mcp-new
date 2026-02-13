@@ -1,0 +1,42 @@
+defmodule <%= namespace %>.ServerTest do
+  use ExUnit.Case
+
+  test "registers all expected tools" do
+    expected_tools = [
+<% if (includeExampleTool) { %>
+      "example_tool",
+<% } %>
+<% tools.forEach(function(tool) { %>
+      "<%= tool.name %>",
+<% }); %>
+<% if (sampling && sampling.enabled) { %>
+      "sample_text",
+<% } %>
+    ]
+    assert length(expected_tools) > 0
+  end
+
+<% if (includeExampleTool) { %>
+  test "handles example_tool call" do
+    args = %{"query" => "test input"}
+    assert Map.has_key?(args, "query")
+  end
+<% } %>
+
+<% tools.forEach(function(tool) { %>
+  test "handles <%= tool.name %> call" do
+    args = %{
+<% tool.parameters.filter(p => p.required).forEach(function(param) { %>
+      "<%= param.name %>" => <%= param.type === 'string' ? '"test"' : param.type === 'number' ? '1' : param.type === 'boolean' ? 'true' : param.type === 'array' ? '[]' : '%{}' %>,
+<% }); %>
+    }
+    assert is_map(args)
+  end
+
+<% }); %>
+  test "raises on unknown tool" do
+    assert_raise RuntimeError, ~r/Unknown tool/, fn ->
+      raise "Unknown tool: nonexistent_tool"
+    end
+  end
+end

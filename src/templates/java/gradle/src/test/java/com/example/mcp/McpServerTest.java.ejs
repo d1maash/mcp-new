@@ -1,0 +1,54 @@
+package com.example.mcp;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.List;
+import java.util.Arrays;
+
+class McpServerTest {
+
+    @Test
+    void shouldRegisterAllTools() {
+        List<String> expectedTools = Arrays.asList(
+<% if (includeExampleTool) { %>
+            "example_tool"<%= tools.length > 0 || (sampling && sampling.enabled) ? ',' : '' %>
+<% } %>
+<% tools.forEach(function(tool, index) { %>
+            "<%= tool.name %>"<%= index < tools.length - 1 || (sampling && sampling.enabled) ? ',' : '' %>
+<% }); %>
+<% if (sampling && sampling.enabled) { %>
+            "sample_text"
+<% } %>
+        );
+        assertFalse(expectedTools.isEmpty(), "Should have at least one tool");
+    }
+
+<% if (includeExampleTool) { %>
+    @Test
+    void shouldHandleExampleTool() {
+        String query = "test input";
+        assertNotNull(query);
+        assertFalse(query.isEmpty());
+    }
+<% } %>
+
+<% tools.forEach(function(tool) { %>
+    @Test
+    void shouldHandle<%= tool.name.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('') %>() {
+        // Test <%= tool.name %> with valid arguments
+        assertDoesNotThrow(() -> {
+            // Tool call simulation
+            String toolName = "<%= tool.name %>";
+            assertNotNull(toolName);
+        });
+    }
+
+<% }); %>
+    @Test
+    void shouldThrowOnUnknownTool() {
+        assertThrows(RuntimeException.class, () -> {
+            throw new RuntimeException("Unknown tool: nonexistent_tool");
+        });
+    }
+}

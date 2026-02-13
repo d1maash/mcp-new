@@ -11,7 +11,16 @@ license = "MIT"
 requires-python = ">=3.10"
 dependencies = [
     "mcp>=1.0.0",
+<% if (auth && auth.type === 'oauth') { %>
+    "PyJWT>=2.8.0",
+<% } %>
 ]
+<% if (includeTests) { %>
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+]
+<% } %>
 
 [project.scripts]
 <%= name %> = "src.server:main"

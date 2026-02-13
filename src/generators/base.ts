@@ -68,11 +68,123 @@ export abstract class BaseGenerator {
       sampling: this.config.sampling,
       includeExampleTool: this.config.includeExampleTool,
       javaBuildTool: this.config.javaBuildTool,
+      docker: this.config.docker,
+      includeTests: this.config.includeTests,
+      auth: this.config.auth,
       // Helper for Java/Elixir package name (lowercase, no special chars)
       packageName: this.config.name.toLowerCase().replace(/[^a-z0-9]/g, ''),
       // Helper for C#/Elixir namespace (PascalCase)
       namespace: capitalizedName,
     };
+  }
+
+  protected async renderDockerFiles(): Promise<void> {
+    if (!this.config.docker) return;
+
+    const templateData = this.getTemplateData();
+    const dockerTemplateDir = path.join(getTemplateDir(), 'docker');
+
+    // Render language-specific Dockerfile
+    const dockerfileSrc = path.join(dockerTemplateDir, `Dockerfile.${this.config.language}.ejs`);
+    if (await exists(dockerfileSrc)) {
+      await renderTemplateToFile(
+        dockerfileSrc,
+        path.join(this.outputDir, 'Dockerfile'),
+        templateData
+      );
+    }
+
+    // Render docker-compose.yml
+    const composeSrc = path.join(dockerTemplateDir, 'docker-compose.yml.ejs');
+    if (await exists(composeSrc)) {
+      await renderTemplateToFile(
+        composeSrc,
+        path.join(this.outputDir, 'docker-compose.yml'),
+        templateData
+      );
+    }
+  }
+
+  protected async renderTestFiles(): Promise<void> {
+    if (!this.config.includeTests) return;
+
+    const templateData = this.getTemplateData();
+    const lang = this.config.language;
+
+    // Map of language to test template relative paths
+    const testTemplates: Record<string, { src: string; dest: string }[]> = {
+      typescript: [
+        { src: 'src/__tests__/server.test.ts.ejs', dest: 'src/__tests__/server.test.ts' },
+      ],
+      python: [{ src: 'tests/test_server.py.ejs', dest: 'tests/test_server.py' }],
+      go: [
+        { src: 'internal/tools/example_test.go.ejs', dest: 'internal/tools/example_test.go' },
+      ],
+      rust: [{ src: 'tests/tools_test.rs.ejs', dest: 'tests/tools_test.rs' }],
+      java: [
+        {
+          src: 'src/test/java/com/example/mcp/McpServerTest.java.ejs',
+          dest: 'src/test/java/com/example/mcp/McpServerTest.java',
+        },
+      ],
+      kotlin: [
+        {
+          src: 'src/test/kotlin/com/example/mcp/McpServerTest.kt.ejs',
+          dest: 'src/test/kotlin/com/example/mcp/McpServerTest.kt',
+        },
+      ],
+      csharp: [{ src: 'tests/McpServerTests.cs.ejs', dest: 'tests/McpServerTests.cs' }],
+      elixir: [{ src: 'test/server_test.exs.ejs', dest: 'test/server_test.exs' }],
+    };
+
+    const templates = testTemplates[lang];
+    if (!templates) return;
+
+    for (const tmpl of templates) {
+      const srcPath = path.join(this.templateDir, tmpl.src);
+      if (await exists(srcPath)) {
+        await renderTemplateToFile(srcPath, path.join(this.outputDir, tmpl.dest), templateData);
+      }
+    }
+  }
+
+  protected async renderAuthFiles(): Promise<void> {
+    if (!this.config.auth || this.config.auth.type === 'none') return;
+    if (this.config.transport !== 'sse') return;
+
+    const templateData = this.getTemplateData();
+    const lang = this.config.language;
+    const authType = this.config.auth.type;
+
+    const authTemplates: Record<string, Record<string, { src: string; dest: string }[]>> = {
+      typescript: {
+        'api-key': [{ src: 'src/auth/api-key.ts.ejs', dest: 'src/auth/api-key.ts' }],
+        oauth: [{ src: 'src/auth/oauth.ts.ejs', dest: 'src/auth/oauth.ts' }],
+      },
+      python: {
+        'api-key': [
+          { src: 'src/auth/__init__.py.ejs', dest: 'src/auth/__init__.py' },
+          { src: 'src/auth/api_key.py.ejs', dest: 'src/auth/api_key.py' },
+        ],
+        oauth: [
+          { src: 'src/auth/__init__.py.ejs', dest: 'src/auth/__init__.py' },
+          { src: 'src/auth/oauth.py.ejs', dest: 'src/auth/oauth.py' },
+        ],
+      },
+    };
+
+    const langTemplates = authTemplates[lang];
+    if (!langTemplates) return;
+
+    const templates = langTemplates[authType];
+    if (!templates) return;
+
+    for (const tmpl of templates) {
+      const srcPath = path.join(this.templateDir, tmpl.src);
+      if (await exists(srcPath)) {
+        await renderTemplateToFile(srcPath, path.join(this.outputDir, tmpl.dest), templateData);
+      }
+    }
   }
 
   protected async installDependencies(): Promise<void> {

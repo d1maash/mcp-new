@@ -67,11 +67,11 @@ describe('Web API', () => {
     expect(ids).toContain('rust');
   });
 
-  it('GET /api/presets returns all 3 presets', async () => {
+  it('GET /api/presets returns all presets', async () => {
     const { status, data } = await request(port, 'GET', '/api/presets');
     expect(status).toBe(200);
     const body = data as { presets: Array<{ id: string; name: string }> };
-    expect(body.presets).toHaveLength(3);
+    expect(body.presets.length).toBeGreaterThanOrEqual(3);
     const ids = body.presets.map((p) => p.id);
     expect(ids).toContain('database');
     expect(ids).toContain('rest-api');

@@ -98,6 +98,8 @@ export async function initCommand(options: InitOptions): Promise<void> {
       includeExampleTool,
       skipInstall: options.skipInstall || false,
       initGit: false, // Don't init git in existing project
+      docker: false,
+      includeTests: false,
     };
 
     await generateFromWizard(config, currentDir);

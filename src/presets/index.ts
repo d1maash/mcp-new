@@ -1,6 +1,10 @@
 import { DATABASE_PRESET } from './database.js';
 import { REST_API_PRESET } from './rest-api.js';
 import { FILESYSTEM_PRESET } from './filesystem.js';
+import { MONITORING_PRESET } from './monitoring.js';
+import { GIT_TOOLS_PRESET } from './git-tools.js';
+import { MESSAGING_PRESET } from './messaging.js';
+import { LLM_TOOLS_PRESET } from './llm-tools.js';
 import type {
   ToolConfig,
   ResourceConfig,
@@ -17,6 +21,10 @@ import { resolveExternalPreset } from '../marketplace/index.js';
 export { DATABASE_PRESET } from './database.js';
 export { REST_API_PRESET } from './rest-api.js';
 export { FILESYSTEM_PRESET } from './filesystem.js';
+export { MONITORING_PRESET } from './monitoring.js';
+export { GIT_TOOLS_PRESET } from './git-tools.js';
+export { MESSAGING_PRESET } from './messaging.js';
+export { LLM_TOOLS_PRESET } from './llm-tools.js';
 
 export interface Preset {
   id: string;
@@ -32,11 +40,15 @@ export const PRESETS: Record<string, Preset> = {
   database: DATABASE_PRESET as Preset,
   'rest-api': REST_API_PRESET as Preset,
   filesystem: FILESYSTEM_PRESET as Preset,
+  monitoring: MONITORING_PRESET as Preset,
+  'git-tools': GIT_TOOLS_PRESET as Preset,
+  messaging: MESSAGING_PRESET as Preset,
+  'llm-tools': LLM_TOOLS_PRESET as Preset,
 };
 
 export const PRESET_IDS = Object.keys(PRESETS) as PresetId[];
 
-export type PresetId = 'database' | 'rest-api' | 'filesystem';
+export type PresetId = 'database' | 'rest-api' | 'filesystem' | 'monitoring' | 'git-tools' | 'messaging' | 'llm-tools';
 
 export function getPreset(id: string): Preset | undefined {
   return PRESETS[id];

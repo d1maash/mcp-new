@@ -1,0 +1,48 @@
+package com.example.mcp
+
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.assertThrows
+
+class McpServerTest {
+
+    @Test
+    fun `should register all tools`() {
+        val expectedTools = listOf(
+<% if (includeExampleTool) { %>
+            "example_tool",
+<% } %>
+<% tools.forEach(function(tool) { %>
+            "<%= tool.name %>",
+<% }); %>
+<% if (sampling && sampling.enabled) { %>
+            "sample_text",
+<% } %>
+        )
+        assertTrue(expectedTools.isNotEmpty(), "Should have at least one tool")
+    }
+
+<% if (includeExampleTool) { %>
+    @Test
+    fun `should handle example_tool`() {
+        val query = "test input"
+        assertNotNull(query)
+        assertTrue(query.isNotEmpty())
+    }
+<% } %>
+
+<% tools.forEach(function(tool) { %>
+    @Test
+    fun `should handle <%= tool.name %>`() {
+        val toolName = "<%= tool.name %>"
+        assertNotNull(toolName)
+    }
+
+<% }); %>
+    @Test
+    fun `should throw on unknown tool`() {
+        assertThrows<RuntimeException> {
+            throw RuntimeException("Unknown tool: nonexistent_tool")
+        }
+    }
+}

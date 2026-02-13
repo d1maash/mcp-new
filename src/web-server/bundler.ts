@@ -31,6 +31,9 @@ function getTemplateData(config: ProjectConfig): Record<string, unknown> {
     sampling: config.sampling,
     includeExampleTool: config.includeExampleTool,
     javaBuildTool: config.javaBuildTool,
+    docker: config.docker,
+    includeTests: config.includeTests,
+    auth: config.auth,
     packageName: config.name.toLowerCase().replace(/[^a-z0-9]/g, ''),
     namespace: capitalizedName,
   };
@@ -120,6 +123,113 @@ export async function generateProjectInMemory(config: ProjectConfig): Promise<Ge
       language: inferLanguage(outputRelative),
     });
   });
+
+  // Generate Docker files if enabled
+  if (config.docker) {
+    const dockerDir = path.join(getTemplateDir(), 'docker');
+    const dockerfileSrc = path.join(dockerDir, `Dockerfile.${config.language}.ejs`);
+    if (await fs.pathExists(dockerfileSrc)) {
+      const template = await readFile(dockerfileSrc);
+      const content = ejs.render(template, templateData, { async: false });
+      files.push({
+        path: path.join(config.name, 'Dockerfile'),
+        content,
+        language: 'dockerfile',
+      });
+    }
+    const composeSrc = path.join(dockerDir, 'docker-compose.yml.ejs');
+    if (await fs.pathExists(composeSrc)) {
+      const template = await readFile(composeSrc);
+      const content = ejs.render(template, templateData, { async: false });
+      files.push({
+        path: path.join(config.name, 'docker-compose.yml'),
+        content,
+        language: 'yaml',
+      });
+    }
+  }
+
+  // Generate test files if enabled
+  if (config.includeTests) {
+    const testTemplates: Record<string, { src: string; dest: string }[]> = {
+      typescript: [
+        { src: 'src/__tests__/server.test.ts.ejs', dest: 'src/__tests__/server.test.ts' },
+      ],
+      python: [{ src: 'tests/test_server.py.ejs', dest: 'tests/test_server.py' }],
+      go: [
+        { src: 'internal/tools/example_test.go.ejs', dest: 'internal/tools/example_test.go' },
+      ],
+      rust: [{ src: 'tests/tools_test.rs.ejs', dest: 'tests/tools_test.rs' }],
+      java: [
+        {
+          src: 'src/test/java/com/example/mcp/McpServerTest.java.ejs',
+          dest: 'src/test/java/com/example/mcp/McpServerTest.java',
+        },
+      ],
+      kotlin: [
+        {
+          src: 'src/test/kotlin/com/example/mcp/McpServerTest.kt.ejs',
+          dest: 'src/test/kotlin/com/example/mcp/McpServerTest.kt',
+        },
+      ],
+      csharp: [{ src: 'tests/McpServerTests.cs.ejs', dest: 'tests/McpServerTests.cs' }],
+      elixir: [{ src: 'test/server_test.exs.ejs', dest: 'test/server_test.exs' }],
+    };
+    const templates = testTemplates[config.language];
+    if (templates) {
+      for (const tmpl of templates) {
+        const srcPath = path.join(templateDir, tmpl.src);
+        if (await fs.pathExists(srcPath)) {
+          const template = await readFile(srcPath);
+          const content = ejs.render(template, templateData, { async: false });
+          files.push({
+            path: path.join(config.name, tmpl.dest),
+            content,
+            language: inferLanguage(tmpl.dest),
+          });
+        }
+      }
+    }
+  }
+
+  // Generate auth files if configured
+  if (config.auth && config.auth.type !== 'none' && config.transport === 'sse') {
+    const authType = config.auth.type;
+    const authTemplates: Record<string, Record<string, { src: string; dest: string }[]>> = {
+      typescript: {
+        'api-key': [{ src: 'src/auth/api-key.ts.ejs', dest: 'src/auth/api-key.ts' }],
+        oauth: [{ src: 'src/auth/oauth.ts.ejs', dest: 'src/auth/oauth.ts' }],
+      },
+      python: {
+        'api-key': [
+          { src: 'src/auth/__init__.py.ejs', dest: 'src/auth/__init__.py' },
+          { src: 'src/auth/api_key.py.ejs', dest: 'src/auth/api_key.py' },
+        ],
+        oauth: [
+          { src: 'src/auth/__init__.py.ejs', dest: 'src/auth/__init__.py' },
+          { src: 'src/auth/oauth.py.ejs', dest: 'src/auth/oauth.py' },
+        ],
+      },
+    };
+    const langAuth = authTemplates[config.language];
+    if (langAuth) {
+      const authFiles = langAuth[authType];
+      if (authFiles) {
+        for (const tmpl of authFiles) {
+          const srcPath = path.join(templateDir, tmpl.src);
+          if (await fs.pathExists(srcPath)) {
+            const template = await readFile(srcPath);
+            const content = ejs.render(template, templateData, { async: false });
+            files.push({
+              path: path.join(config.name, tmpl.dest),
+              content,
+              language: inferLanguage(tmpl.dest),
+            });
+          }
+        }
+      }
+    }
+  }
 
   return files;
 }

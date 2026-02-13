@@ -1,0 +1,29 @@
+"""
+API Key Authentication for <%= name %>
+"""
+
+import os
+from typing import Optional
+
+
+API_KEY_HEADER = "x-api-key"
+
+
+def validate_api_key(headers: dict[str, str]) -> bool:
+    """Validate API key from request headers.
+
+    Set the API_KEY environment variable to configure the expected key.
+    """
+    api_key = headers.get(API_KEY_HEADER)
+    expected_key = os.environ.get("API_KEY")
+
+    if not expected_key:
+        print("Warning: API_KEY environment variable not set. All requests will be rejected.")
+        return False
+
+    return api_key == expected_key
+
+
+def get_api_key_from_headers(headers: dict[str, str]) -> Optional[str]:
+    """Extract API key from request headers."""
+    return headers.get(API_KEY_HEADER)

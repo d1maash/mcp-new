@@ -11,14 +11,6 @@ import { exists, readFile } from '../utils/file-system.js';
 // Types
 // ---------------------------------------------------------------------------
 
-interface DetectedProject {
-  language: Language;
-  transport: Transport;
-  projectName: string;
-  tools: Array<{ name: string; description: string }>;
-  javaBuildTool?: 'maven' | 'gradle';
-}
-
 interface FileDiff {
   filePath: string;
   status: 'added' | 'modified' | 'unchanged';
@@ -483,6 +475,8 @@ export async function upgradeProjectCommand(): Promise<void> {
     includeExampleTool: tools.length === 0,
     skipInstall: true,
     initGit: false,
+    docker: false,
+    includeTests: false,
     ...(javaBuildTool ? { javaBuildTool } : {}),
   };
 

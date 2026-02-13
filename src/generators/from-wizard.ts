@@ -33,6 +33,9 @@ export class WizardGenerator extends BaseGenerator {
         'Generating files from templates...',
         async () => {
           await this.renderTemplates();
+          await this.renderDockerFiles();
+          await this.renderTestFiles();
+          await this.renderAuthFiles();
         },
         'Files generated'
       );
