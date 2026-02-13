@@ -1,0 +1,39 @@
+/**
+ * API Key Authentication Middleware for <%= name %>
+ */
+
+import type { IncomingMessage, ServerResponse } from 'http';
+
+const API_KEY_HEADER = 'x-api-key';
+
+/**
+ * Validate API key from request headers.
+ * Set the API_KEY environment variable to configure the expected key.
+ */
+export function validateApiKey(req: IncomingMessage): boolean {
+  const apiKey = req.headers[API_KEY_HEADER] as string | undefined;
+  const expectedKey = process.env.API_KEY;
+
+  if (!expectedKey) {
+    console.warn('Warning: API_KEY environment variable not set. All requests will be rejected.');
+    return false;
+  }
+
+  return apiKey === expectedKey;
+}
+
+/**
+ * Express-compatible middleware for API key authentication.
+ */
+export function apiKeyMiddleware(
+  req: IncomingMessage,
+  res: ServerResponse,
+  next: () => void
+): void {
+  if (!validateApiKey(req)) {
+    res.writeHead(401, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Unauthorized: Invalid or missing API key' }));
+    return;
+  }
+  next();
+}

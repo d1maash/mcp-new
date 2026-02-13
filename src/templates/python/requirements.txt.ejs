@@ -1,1 +1,4 @@
 mcp>=1.0.0
+<% if (includeTests) { %>pytest>=7.0.0
+<% } %><% if (auth && auth.type === 'oauth') { %>PyJWT>=2.8.0
+<% } %>

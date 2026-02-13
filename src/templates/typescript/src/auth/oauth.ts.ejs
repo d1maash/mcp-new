@@ -1,0 +1,65 @@
+/**
+ * OAuth 2.0 Authentication Middleware for <%= name %>
+ */
+
+import type { IncomingMessage, ServerResponse } from 'http';
+
+interface TokenPayload {
+  sub: string;
+  exp: number;
+  iat: number;
+  scope?: string;
+}
+
+/**
+ * Validate a Bearer token from the Authorization header.
+ * In production, replace this with proper JWT verification
+ * using a library like 'jsonwebtoken' or validate against your OAuth provider.
+ */
+export function validateBearerToken(req: IncomingMessage): boolean {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return false;
+  }
+
+  const token = authHeader.slice(7);
+  if (!token) {
+    return false;
+  }
+
+  // TODO: Implement proper token verification
+  // Example with jsonwebtoken:
+  //   import jwt from 'jsonwebtoken';
+  //   const secret = process.env.JWT_SECRET;
+  //   const decoded = jwt.verify(token, secret) as TokenPayload;
+  //   return decoded.exp > Date.now() / 1000;
+
+  const secret = process.env.JWT_SECRET || process.env.OAUTH_SECRET;
+  if (!secret) {
+    console.warn('Warning: JWT_SECRET environment variable not set.');
+    return false;
+  }
+
+  // Placeholder: accept any non-empty token when secret is set
+  // Replace with real verification in production
+  return token.length > 0;
+}
+
+/**
+ * Express-compatible middleware for OAuth Bearer token authentication.
+ */
+export function oauthMiddleware(
+  req: IncomingMessage,
+  res: ServerResponse,
+  next: () => void
+): void {
+  if (!validateBearerToken(req)) {
+    res.writeHead(401, {
+      'Content-Type': 'application/json',
+      'WWW-Authenticate': 'Bearer realm="<%= name %>"',
+    });
+    res.end(JSON.stringify({ error: 'Unauthorized: Invalid or missing Bearer token' }));
+    return;
+  }
+  next();
+}

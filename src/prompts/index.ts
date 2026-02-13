@@ -1,4 +1,5 @@
-import type { ProjectConfig, Language, JavaBuildTool } from '../types/config.js';
+import inquirer from 'inquirer';
+import type { ProjectConfig, Language, JavaBuildTool, AuthConfig } from '../types/config.js';
 import { promptProjectName, promptProjectDescription } from './project-name.js';
 import { promptLanguage } from './language.js';
 import { promptTransport } from './transport.js';
@@ -71,6 +72,18 @@ export async function runWizard(options: WizardOptions = {}): Promise<ProjectCon
 
   const sampling = options.skipAdvanced ? { enabled: false } : await promptSamplingConfig(true);
 
+  // Docker support
+  const docker = options.skipAdvanced ? false : await promptDocker();
+
+  // Test generation
+  const includeTests = options.skipAdvanced ? false : await promptIncludeTests();
+
+  // Auth middleware (only for SSE transport)
+  let auth: AuthConfig | undefined;
+  if (!options.skipAdvanced && transport === 'sse') {
+    auth = await promptAuth();
+  }
+
   return {
     name,
     description,
@@ -84,6 +97,9 @@ export async function runWizard(options: WizardOptions = {}): Promise<ProjectCon
     skipInstall: false,
     initGit: true,
     javaBuildTool,
+    docker,
+    includeTests,
+    auth,
   };
 }
 
@@ -123,5 +139,50 @@ export async function runQuickWizard(
     skipInstall: false,
     initGit: true,
     javaBuildTool,
+    docker: false,
+    includeTests: false,
   };
+}
+
+export async function promptDocker(): Promise<boolean> {
+  const { docker } = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'docker',
+      message: 'Include Docker configuration (Dockerfile + docker-compose)?',
+      default: false,
+    },
+  ]);
+  return docker;
+}
+
+export async function promptIncludeTests(): Promise<boolean> {
+  const { includeTests } = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'includeTests',
+      message: 'Include unit test templates?',
+      default: false,
+    },
+  ]);
+  return includeTests;
+}
+
+export async function promptAuth(): Promise<AuthConfig | undefined> {
+  const { authType } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'authType',
+      message: 'Add authentication middleware?',
+      choices: [
+        { name: 'None', value: 'none' },
+        { name: 'API Key', value: 'api-key' },
+        { name: 'OAuth 2.0 (Bearer Token)', value: 'oauth' },
+      ],
+      default: 'none',
+    },
+  ]);
+
+  if (authType === 'none') return undefined;
+  return { type: authType };
 }

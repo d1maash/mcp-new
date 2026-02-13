@@ -1,5 +1,5 @@
 import { BaseGenerator, createGeneratorContext } from './base.js';
-import type { ProjectConfig, GeneratorContext, Language, JavaBuildTool } from '../types/config.js';
+import type { ProjectConfig, GeneratorContext, Language, JavaBuildTool, AuthConfig } from '../types/config.js';
 import {
   getPreset,
   getPresetByIdentifier,
@@ -47,6 +47,9 @@ export class PresetGenerator extends BaseGenerator {
         'Generating files from templates...',
         async () => {
           await this.renderTemplates();
+          await this.renderDockerFiles();
+          await this.renderTestFiles();
+          await this.renderAuthFiles();
         },
         'Files generated'
       );
@@ -69,6 +72,9 @@ export interface PresetGeneratorOptions {
   skipInstall?: boolean;
   useDefaults?: boolean;
   javaBuildTool?: JavaBuildTool;
+  docker?: boolean;
+  includeTests?: boolean;
+  auth?: AuthConfig;
 }
 
 export async function generateFromPreset(options: PresetGeneratorOptions): Promise<ProjectConfig> {
@@ -123,6 +129,9 @@ export async function generateFromPreset(options: PresetGeneratorOptions): Promi
     skipInstall: options.skipInstall || false,
     initGit: true,
     javaBuildTool,
+    docker: options.docker || false,
+    includeTests: options.includeTests || false,
+    auth: options.auth,
   };
 
   const context = createGeneratorContext(config);
@@ -134,7 +143,7 @@ export async function generateFromPreset(options: PresetGeneratorOptions): Promi
 
 export function validatePresetId(presetId: string): presetId is PresetId {
   if (!isValidPresetId(presetId)) {
-    const validPresets = ['database', 'rest-api', 'filesystem'];
+    const validPresets = ['database', 'rest-api', 'filesystem', 'monitoring', 'git-tools', 'messaging', 'llm-tools'];
     throw new Error(`Invalid preset "${presetId}". Valid presets are: ${validPresets.join(', ')}`);
   }
   return true;

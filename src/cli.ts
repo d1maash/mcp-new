@@ -19,6 +19,7 @@ import { webCommand } from './commands/web.js';
 import { presetCacheCommand } from './commands/preset-cache.js';
 import { pluginRegistry } from './plugins/index.js';
 import { devCommand } from './commands/dev.js';
+import { upgradeProjectCommand } from './commands/upgrade-project.js';
 
 const program = new Command();
 
@@ -59,6 +60,10 @@ ${chalk.bold('Available Presets:')}
   ${chalk.yellow('database')}     Database CRUD tools (query, insert, update, delete, list_tables)
   ${chalk.yellow('rest-api')}     REST API tools (http_get, http_post, http_put, http_delete, set_base_url)
   ${chalk.yellow('filesystem')}   File system tools (read_file, write_file, list_directory, search_files, file_info)
+  ${chalk.yellow('monitoring')}   System monitoring tools (cpu, memory, disk, processes, system_info)
+  ${chalk.yellow('git-tools')}    Git operations (status, log, diff, branch, commit)
+  ${chalk.yellow('messaging')}    Messaging integration (send, read, channels, upload)
+  ${chalk.yellow('llm-tools')}    LLM API tools (chat, embeddings, summarize, translate, extract)
 
 ${chalk.bold('Supported Languages:')}
 
@@ -103,6 +108,10 @@ program
   .option('--preset <name>', 'Use a preset template (database, rest-api, filesystem, or @org/package, github:user/repo)')
   .option('--ci <provider>', 'Add CI/CD configuration (github, gitlab, circleci)')
   .option('-y, --yes', 'Skip prompts and use defaults')
+  .option('--dry-run', 'Preview project structure without writing files')
+  .option('--docker', 'Include Dockerfile and docker-compose.yml')
+  .option('--tests', 'Include unit test templates')
+  .option('--auth <type>', 'Add authentication middleware (api-key, oauth) — SSE only')
   .action(createCommand);
 
 // Init command - initialize in existing directory
@@ -217,6 +226,27 @@ ${chalk.bold('Supported languages:')}
 `
   )
   .action(upgradeCommand);
+
+// Upgrade project command
+program
+  .command('upgrade-project')
+  .description('Migrate existing project to latest template version')
+  .addHelpText(
+    'after',
+    `
+${chalk.bold('Examples:')}
+
+  ${chalk.gray('# Upgrade current project to latest templates')}
+  ${chalk.cyan('$')} mcp-new upgrade-project
+
+${chalk.bold('What it does:')}
+  • Detects project language and configuration
+  • Regenerates project with latest templates
+  • Shows diff of changes for review
+  • Creates .bak backups before applying changes
+`
+  )
+  .action(upgradeProjectCommand);
 
 // Preset cache command
 program

@@ -89,6 +89,14 @@ export const SamplingConfigSchema = z.object({
 });
 export type SamplingConfig = z.infer<typeof SamplingConfigSchema>;
 
+export const AuthTypeSchema = z.enum(['none', 'api-key', 'oauth']);
+export type AuthType = z.infer<typeof AuthTypeSchema>;
+
+export const AuthConfigSchema = z.object({
+  type: AuthTypeSchema,
+});
+export type AuthConfig = z.infer<typeof AuthConfigSchema>;
+
 export const ProjectConfigSchema = z.object({
   name: z.string().min(1, 'Project name is required'),
   description: z.string().default(''),
@@ -102,6 +110,9 @@ export const ProjectConfigSchema = z.object({
   skipInstall: z.boolean().default(false),
   initGit: z.boolean().default(true),
   javaBuildTool: JavaBuildToolSchema.optional(),
+  docker: z.boolean().default(false),
+  includeTests: z.boolean().default(false),
+  auth: AuthConfigSchema.optional(),
 });
 export type ProjectConfig = z.infer<typeof ProjectConfigSchema>;
 
@@ -111,7 +122,15 @@ export interface GeneratorContext {
   templateDir: string;
 }
 
-export const PresetIdSchema = z.enum(['database', 'rest-api', 'filesystem']);
+export const PresetIdSchema = z.enum([
+  'database',
+  'rest-api',
+  'filesystem',
+  'monitoring',
+  'git-tools',
+  'messaging',
+  'llm-tools',
+]);
 export type PresetId = z.infer<typeof PresetIdSchema>;
 
 export interface CLIOptions {
@@ -131,4 +150,8 @@ export interface CLIOptions {
   preset?: string;
   yes?: boolean;
   ci?: string;
+  dryRun?: boolean;
+  docker?: boolean;
+  tests?: boolean;
+  auth?: string;
 }

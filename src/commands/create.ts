@@ -1,5 +1,5 @@
 import path from 'path';
-import type { CLIOptions, ProjectConfig, Language, JavaBuildTool } from '../types/config.js';
+import type { CLIOptions, ProjectConfig, Language, JavaBuildTool, AuthConfig } from '../types/config.js';
 import type { CIProvider } from '../types/ci.js';
 import { isValidCIProvider } from '../types/ci.js';
 import { runWizard, runQuickWizard } from '../prompts/index.js';
@@ -9,6 +9,7 @@ import { generateFromPrompt } from '../generators/from-prompt.js';
 import { generateFromPreset } from '../generators/from-preset.js';
 import { isExternalPreset, isValidPresetId, PRESET_IDS } from '../presets/index.js';
 import { generateCI } from '../generators/ci.js';
+import { executeDryRun } from './dry-run.js';
 import { logger } from '../utils/logger.js';
 import { exists } from '../utils/file-system.js';
 
@@ -30,6 +31,35 @@ function getJavaBuildToolFromOptions(options: CLIOptions): JavaBuildTool | undef
   if (options.maven) return 'maven';
   if (options.gradle) return 'gradle';
   return undefined;
+}
+
+// Helper function to get auth config from CLI options
+function getAuthFromOptions(options: CLIOptions): AuthConfig | undefined {
+  if (!options.auth) return undefined;
+  const authType = options.auth as 'api-key' | 'oauth';
+  if (authType !== 'api-key' && authType !== 'oauth') {
+    logger.error(`Invalid auth type "${options.auth}". Valid options: api-key, oauth`);
+    process.exit(1);
+  }
+  return { type: authType };
+}
+
+// Apply extra CLI options (docker, tests, auth) to a config
+function applyExtraOptions(config: ProjectConfig, options: CLIOptions): void {
+  if (options.docker) {
+    config.docker = true;
+  }
+  if (options.tests) {
+    config.includeTests = true;
+  }
+  const auth = getAuthFromOptions(options);
+  if (auth) {
+    if (config.transport !== 'sse') {
+      logger.warning('Auth middleware is only supported with SSE transport. Ignoring --auth flag.');
+    } else {
+      config.auth = auth;
+    }
+  }
 }
 
 export async function createCommand(
@@ -89,6 +119,14 @@ async function handleWizardGeneration(
 
   if (options.skipInstall) {
     config.skipInstall = true;
+  }
+
+  applyExtraOptions(config, options);
+
+  // Dry run mode - preview without writing
+  if (options.dryRun) {
+    await executeDryRun(config);
+    return;
   }
 
   // Check if directory exists
@@ -166,6 +204,9 @@ async function handlePresetGeneration(
     skipInstall: options.skipInstall,
     useDefaults: options.yes,
     javaBuildTool: getJavaBuildToolFromOptions(options),
+    docker: options.docker,
+    includeTests: options.tests,
+    auth: getAuthFromOptions(options),
   });
 
   // Generate CI if requested

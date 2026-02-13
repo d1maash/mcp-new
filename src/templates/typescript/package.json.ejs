@@ -12,6 +12,9 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "start": "node dist/index.js",
+<% if (includeTests) { %>
+    "test": "node --test dist/__tests__/",
+<% } %>
     "inspector": "npx @modelcontextprotocol/inspector node dist/index.js"
   },
   "keywords": [
@@ -20,7 +23,8 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0"
+    "@modelcontextprotocol/sdk": "^1.0.0"<% if (auth && auth.type === 'oauth') { %>,
+    "jsonwebtoken": "^9.0.0"<% } %>
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

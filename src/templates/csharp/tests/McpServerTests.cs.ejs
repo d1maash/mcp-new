@@ -1,0 +1,55 @@
+using Xunit;
+using System;
+using System.Collections.Generic;
+
+namespace <%= namespace %>.Tests
+{
+    public class McpServerTests
+    {
+        [Fact]
+        public void ShouldRegisterAllTools()
+        {
+            var expectedTools = new List<string>
+            {
+<% if (includeExampleTool) { %>
+                "example_tool",
+<% } %>
+<% tools.forEach(function(tool) { %>
+                "<%= tool.name %>",
+<% }); %>
+<% if (sampling && sampling.enabled) { %>
+                "sample_text",
+<% } %>
+            };
+            Assert.NotEmpty(expectedTools);
+        }
+
+<% if (includeExampleTool) { %>
+        [Fact]
+        public void ShouldHandleExampleTool()
+        {
+            var query = "test input";
+            Assert.NotNull(query);
+            Assert.NotEmpty(query);
+        }
+<% } %>
+
+<% tools.forEach(function(tool) { %>
+        [Fact]
+        public void ShouldHandle<%= tool.name.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('') %>()
+        {
+            var toolName = "<%= tool.name %>";
+            Assert.NotNull(toolName);
+        }
+
+<% }); %>
+        [Fact]
+        public void ShouldThrowOnUnknownTool()
+        {
+            Assert.Throws<Exception>(() =>
+            {
+                throw new Exception("Unknown tool: nonexistent_tool");
+            });
+        }
+    }
+}

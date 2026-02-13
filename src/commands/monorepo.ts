@@ -270,6 +270,8 @@ export async function monorepoAddCommand(
         skipInstall: options.skipInstall || false,
         initGit: false, // Don't init git for individual packages
         javaBuildTool,
+        docker: false,
+        includeTests: false,
       },
       outputDir
     );

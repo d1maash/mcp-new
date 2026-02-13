@@ -105,6 +105,8 @@ export async function generateFromOpenAPI(
     skipInstall: baseConfig.skipInstall || false,
     initGit: baseConfig.initGit !== false,
     javaBuildTool: baseConfig.javaBuildTool,
+    docker: false,
+    includeTests: false,
   };
 
   const context = createGeneratorContext(config);

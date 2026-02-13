@@ -171,6 +171,8 @@ export async function generateFromPrompt(baseConfig: Partial<ProjectConfig>): Pr
     skipInstall: baseConfig.skipInstall || false,
     initGit: baseConfig.initGit !== false,
     javaBuildTool: baseConfig.javaBuildTool,
+    docker: false,
+    includeTests: false,
   };
 
   const context = createGeneratorContext(config);
