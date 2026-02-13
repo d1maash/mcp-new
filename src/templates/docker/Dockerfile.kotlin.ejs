@@ -1,0 +1,20 @@
+FROM eclipse-temurin:21-jdk AS builder
+WORKDIR /app
+COPY . .
+<% if (javaBuildTool === 'gradle') { %>
+RUN ./gradlew build -x test
+<% } else { %>
+RUN mvn package -DskipTests
+<% } %>
+
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+<% if (javaBuildTool === 'gradle') { %>
+COPY --from=builder /app/build/libs/*.jar app.jar
+<% } else { %>
+COPY --from=builder /app/target/*.jar app.jar
+<% } %>
+<% if (transport === 'sse') { %>
+EXPOSE 3000
+<% } %>
+CMD ["java", "-jar", "app.jar"]

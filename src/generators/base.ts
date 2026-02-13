@@ -10,6 +10,7 @@ import {
   walkDir,
   getTemplateDir,
   readDir,
+  remove,
 } from '../utils/file-system.js';
 import { initGitRepository, createInitialCommit, isGitInstalled } from '../utils/git.js';
 import { logger } from '../utils/logger.js';
@@ -306,7 +307,7 @@ export abstract class BaseGenerator {
     );
   }
 
-  private async checkCommand(command: string): Promise<boolean> {
+  protected async checkCommand(command: string): Promise<boolean> {
     try {
       // Use 'where' on Windows, 'which' on Unix
       const checkCmd = process.platform === 'win32' ? 'where' : 'which';
@@ -347,6 +348,92 @@ export abstract class BaseGenerator {
       }
     }
     return true;
+  }
+
+  protected async withRollback(fn: () => Promise<void>): Promise<void> {
+    const dirExistedBefore = await exists(this.outputDir);
+    try {
+      await fn();
+    } catch (error) {
+      if (!dirExistedBefore && (await exists(this.outputDir))) {
+        logger.warning('Cleaning up partially created project...');
+        await remove(this.outputDir);
+      }
+      throw error;
+    }
+  }
+
+  protected async checkDependencies(): Promise<void> {
+    const missing: string[] = [];
+
+    if (this.config.initGit) {
+      const hasGit = await this.checkCommand('git');
+      if (!hasGit) missing.push('git');
+    }
+
+    if (!this.config.skipInstall) {
+      if (!isBuiltinLanguage(this.config.language)) {
+        const installCommand = pluginRegistry.getPluginInstallCommand(this.config.language);
+        if (installCommand) {
+          const cmd = installCommand.split(' ')[0];
+          const hasCmd = await this.checkCommand(cmd);
+          if (!hasCmd) missing.push(cmd);
+        }
+      } else {
+        switch (this.config.language) {
+          case 'typescript': {
+            const hasNode = await this.checkCommand('node');
+            const hasNpm = await this.checkCommand('npm');
+            if (!hasNode) missing.push('node');
+            if (!hasNpm) missing.push('npm');
+            break;
+          }
+          case 'python': {
+            const hasPip = await this.checkCommand('pip');
+            const hasPip3 = await this.checkCommand('pip3');
+            if (!hasPip && !hasPip3) missing.push('pip');
+            break;
+          }
+          case 'go': {
+            const hasGo = await this.checkCommand('go');
+            if (!hasGo) missing.push('go');
+            break;
+          }
+          case 'rust': {
+            const hasCargo = await this.checkCommand('cargo');
+            if (!hasCargo) missing.push('cargo');
+            break;
+          }
+          case 'java':
+          case 'kotlin': {
+            if (this.config.javaBuildTool === 'gradle') {
+              const hasGradle = await this.checkCommand('gradle');
+              if (!hasGradle) missing.push('gradle');
+            } else {
+              const hasMvn = await this.checkCommand('mvn');
+              if (!hasMvn) missing.push('mvn');
+            }
+            break;
+          }
+          case 'csharp': {
+            const hasDotnet = await this.checkCommand('dotnet');
+            if (!hasDotnet) missing.push('dotnet');
+            break;
+          }
+          case 'elixir': {
+            const hasMix = await this.checkCommand('mix');
+            if (!hasMix) missing.push('mix');
+            break;
+          }
+        }
+      }
+    }
+
+    if (missing.length > 0) {
+      logger.warning(
+        `Missing dependencies: ${missing.join(', ')}. Some steps may fail. Please install them and try again.`
+      );
+    }
   }
 }
 

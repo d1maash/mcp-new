@@ -1,6 +1,7 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { exists, readFile } from '../utils/file-system.js';
+import { logger } from '../utils/logger.js';
 import {
   LanguagePluginManifestSchema,
   PLUGIN_MANIFEST_FILE,
@@ -69,28 +70,43 @@ async function loadPlugin(packagePath: string, packageName: string): Promise<Loa
     return null;
   }
 
+  let content: string;
   try {
-    const content = await readFile(manifestPath);
-    const rawManifest = JSON.parse(content);
-    const manifest = LanguagePluginManifestSchema.parse(rawManifest);
-
-    const templatePath = path.join(packagePath, manifest.templateDir);
-
-    if (!(await exists(templatePath))) {
-      console.warn(`Plugin ${packageName}: templates directory not found at ${templatePath}`);
-      return null;
-    }
-
-    return {
-      manifest,
-      packageName,
-      packagePath,
-      templatePath,
-    };
-  } catch (error) {
-    console.warn(`Failed to load plugin ${packageName}:`, error);
+    content = await readFile(manifestPath);
+  } catch {
+    logger.warning(`Plugin ${packageName}: could not read ${PLUGIN_MANIFEST_FILE}`);
     return null;
   }
+
+  let rawManifest: unknown;
+  try {
+    rawManifest = JSON.parse(content);
+  } catch {
+    logger.warning(`Plugin ${packageName}: malformed ${PLUGIN_MANIFEST_FILE}`);
+    return null;
+  }
+
+  const result = LanguagePluginManifestSchema.safeParse(rawManifest);
+  if (!result.success) {
+    const issues = result.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ');
+    logger.warning(`Plugin ${packageName}: invalid manifest — ${issues}`);
+    return null;
+  }
+
+  const manifest = result.data;
+  const templatePath = path.join(packagePath, manifest.templateDir);
+
+  if (!(await exists(templatePath))) {
+    logger.warning(`Plugin ${packageName}: template directory "${manifest.templateDir}" not found`);
+    return null;
+  }
+
+  return {
+    manifest,
+    packageName,
+    packagePath,
+    templatePath,
+  };
 }
 
 function getGlobalNodeModulesPath(): string {

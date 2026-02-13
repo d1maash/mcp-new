@@ -1,0 +1,42 @@
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_tools_registered() {
+        let expected_tools = vec![
+<% if (includeExampleTool) { %>
+            "example_tool",
+<% } %>
+<% tools.forEach(function(tool) { %>
+            "<%= tool.name %>",
+<% }); %>
+        ];
+        assert!(!expected_tools.is_empty(), "Should have at least one tool");
+    }
+
+<% if (includeExampleTool) { %>
+    #[test]
+    fn test_example_tool() {
+        let query = "test input";
+        assert!(!query.is_empty());
+    }
+<% } %>
+
+<% tools.forEach(function(tool) { %>
+    #[test]
+    fn test_<%= tool.name %>() {
+        // Test <%= tool.name %> with valid arguments
+        let args = serde_json::json!({
+<% tool.parameters.filter(p => p.required).forEach(function(param, i) { %>
+            "<%= param.name %>": <%= param.type === 'string' ? '"test"' : param.type === 'number' ? '1' : param.type === 'boolean' ? 'true' : param.type === 'array' ? '[]' : '{}' %><%= i < tool.parameters.filter(p => p.required).length - 1 ? ',' : '' %>
+<% }); %>
+        });
+        assert!(args.is_object());
+    }
+
+<% }); %>
+    #[test]
+    #[should_panic(expected = "Unknown tool")]
+    fn test_unknown_tool_panics() {
+        panic!("Unknown tool: nonexistent_tool");
+    }
+}

@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
 export const LanguagePluginManifestSchema = z.object({
-  languageId: z.string(),
-  languageDisplayName: z.string(),
-  templateDir: z.string().default('templates'),
+  languageId: z.string().min(1).regex(/^[a-z][a-z0-9-]*$/, 'languageId must be lowercase alphanumeric with hyphens'),
+  languageDisplayName: z.string().min(1),
+  templateDir: z.string().min(1).default('templates'),
   installCommand: z.string().optional(),
   runCommand: z.string().optional(),
   buildCommand: z.string().optional(),
