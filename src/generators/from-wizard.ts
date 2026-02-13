@@ -11,7 +11,6 @@ export class WizardGenerator extends BaseGenerator {
   async generate(): Promise<void> {
     logger.title(`Creating ${this.config.name}`);
 
-    // Check if output directory is safe to use
     const isSafe = await this.checkOutputDir();
     if (!isSafe) {
       throw new Error(
@@ -19,31 +18,29 @@ export class WizardGenerator extends BaseGenerator {
       );
     }
 
-    // Create project structure
-    await withSpinner(
-      'Creating project structure...',
-      async () => {
-        await this.createProjectStructure();
-      },
-      'Project structure created'
-    );
+    await this.checkDependencies();
 
-    // Render templates
-    await withSpinner(
-      'Generating files from templates...',
-      async () => {
-        await this.renderTemplates();
-      },
-      'Files generated'
-    );
+    await this.withRollback(async () => {
+      await withSpinner(
+        'Creating project structure...',
+        async () => {
+          await this.createProjectStructure();
+        },
+        'Project structure created'
+      );
 
-    // Install dependencies
-    await this.installDependencies();
+      await withSpinner(
+        'Generating files from templates...',
+        async () => {
+          await this.renderTemplates();
+        },
+        'Files generated'
+      );
 
-    // Initialize git
-    await this.initializeGit();
+      await this.installDependencies();
+      await this.initializeGit();
+    });
 
-    // Show success message
     logger.success(`Project ${this.config.name} created successfully!`);
     logger.nextSteps(this.config.name, this.config.language, this.config.javaBuildTool);
   }

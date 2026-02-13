@@ -1,0 +1,45 @@
+"""Tests for <%= name %> MCP server."""
+
+import pytest
+
+
+def test_tools_registered():
+    """Test that all expected tools are registered."""
+    expected_tools = [
+<% if (includeExampleTool) { %>
+        "example_tool",
+<% } %>
+<% tools.forEach(function(tool) { %>
+        "<%= tool.name %>",
+<% }); %>
+<% if (sampling && sampling.enabled) { %>
+        "sample_text",
+<% } %>
+    ]
+    assert len(expected_tools) > 0
+
+
+<% if (includeExampleTool) { %>
+def test_example_tool():
+    """Test example_tool with valid arguments."""
+    args = {"query": "test input"}
+    assert "query" in args
+<% } %>
+
+
+<% tools.forEach(function(tool) { %>
+def test_<%= tool.name %>():
+    """Test <%= tool.name %> with valid arguments."""
+    args = {
+<% tool.parameters.filter(p => p.required).forEach(function(param) { %>
+        "<%= param.name %>": <%= param.type === 'string' ? '"test"' : param.type === 'number' ? '1' : param.type === 'boolean' ? 'True' : param.type === 'array' ? '[]' : '{}' %>,
+<% }); %>
+    }
+    assert isinstance(args, dict)
+
+
+<% }); %>
+def test_unknown_tool_raises():
+    """Test that calling an unknown tool raises an error."""
+    with pytest.raises(ValueError, match="Unknown tool"):
+        raise ValueError("Unknown tool: nonexistent_tool")

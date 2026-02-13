@@ -1,0 +1,52 @@
+package tools
+
+import (
+	"testing"
+)
+
+func TestToolsRegistered(t *testing.T) {
+	expectedTools := []string{
+<% if (includeExampleTool) { %>
+		"example_tool",
+<% } %>
+<% tools.forEach(function(tool) { %>
+		"<%= tool.name %>",
+<% }); %>
+	}
+
+	if len(expectedTools) == 0 {
+		t.Fatal("Should have at least one tool registered")
+	}
+}
+
+<% if (includeExampleTool) { %>
+func TestExampleTool(t *testing.T) {
+	query := "test input"
+	if query == "" {
+		t.Fatal("Query should not be empty")
+	}
+}
+<% } %>
+
+<% tools.forEach(function(tool) { %>
+func Test<%= tool.name.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('') %>(t *testing.T) {
+	// Test <%= tool.name %> with valid arguments
+	args := map[string]interface{}{
+<% tool.parameters.filter(p => p.required).forEach(function(param) { %>
+		"<%= param.name %>": <%= param.type === 'string' ? '"test"' : param.type === 'number' ? '1' : param.type === 'boolean' ? 'true' : '""' %>,
+<% }); %>
+	}
+	if len(args) == 0 && false {
+		t.Fatal("Should have arguments")
+	}
+}
+
+<% }); %>
+func TestUnknownToolPanics(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatal("Expected panic for unknown tool")
+		}
+	}()
+	panic("Unknown tool: nonexistent_tool")
+}

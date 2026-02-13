@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  <%= packageName %>:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: <%= packageName %>
+<% if (transport === 'sse') { %>
+    ports:
+      - "3000:3000"
+<% } %>
+    environment:
+      - NODE_ENV=production
+<% if (transport === 'stdio') { %>
+    stdin_open: true
+    tty: true
+<% } %>
+    restart: unless-stopped

@@ -42,24 +42,28 @@ export class PromptGenerator extends BaseGenerator {
       throw new Error(`Directory ${this.outputDir} already exists and is not empty.`);
     }
 
-    await withSpinner(
-      'Creating project structure...',
-      async () => {
-        await this.createProjectStructure();
-      },
-      'Project structure created'
-    );
+    await this.checkDependencies();
 
-    await withSpinner(
-      'Generating files from templates...',
-      async () => {
-        await this.renderTemplates();
-      },
-      'Files generated'
-    );
+    await this.withRollback(async () => {
+      await withSpinner(
+        'Creating project structure...',
+        async () => {
+          await this.createProjectStructure();
+        },
+        'Project structure created'
+      );
 
-    await this.installDependencies();
-    await this.initializeGit();
+      await withSpinner(
+        'Generating files from templates...',
+        async () => {
+          await this.renderTemplates();
+        },
+        'Files generated'
+      );
+
+      await this.installDependencies();
+      await this.initializeGit();
+    });
 
     logger.success(`Project ${this.config.name} created successfully!`);
     logger.info(`Generated ${this.config.tools.length} tools from your description`);

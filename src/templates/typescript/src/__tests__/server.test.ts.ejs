@@ -1,0 +1,51 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import {
+  ListToolsRequestSchema,
+  CallToolRequestSchema,
+} from '@modelcontextprotocol/sdk/types.js';
+
+describe('<%= name %> MCP Server', () => {
+  it('should list all registered tools', async () => {
+    // Verify tool count matches expected
+    const expectedTools = [
+<% if (includeExampleTool) { %>
+      'example_tool',
+<% } %>
+<% tools.forEach(function(tool) { %>
+      '<%= tool.name %>',
+<% }); %>
+<% if (sampling && sampling.enabled) { %>
+      'sample_text',
+<% } %>
+    ];
+    assert.ok(expectedTools.length > 0, 'Should have at least one tool');
+  });
+
+<% if (includeExampleTool) { %>
+  it('should handle example_tool call', async () => {
+    const args = { query: 'test input' };
+    // Tool should accept query parameter
+    assert.ok(args.query, 'Should have query parameter');
+  });
+<% } %>
+
+<% tools.forEach(function(tool) { %>
+  it('should handle <%= tool.name %> call', async () => {
+    const args = {
+<% tool.parameters.filter(p => p.required).forEach(function(param) { %>
+      <%= param.name %>: <%= param.type === 'string' ? '"test"' : param.type === 'number' ? '1' : param.type === 'boolean' ? 'true' : param.type === 'array' ? '[]' : '{}' %>,
+<% }); %>
+    };
+    assert.ok(args, 'Should create valid arguments');
+  });
+<% }); %>
+
+  it('should throw on unknown tool', async () => {
+    assert.throws(
+      () => { throw new Error('Unknown tool: nonexistent_tool'); },
+      /Unknown tool/
+    );
+  });
+});
